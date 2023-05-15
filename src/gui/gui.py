@@ -1,0 +1,3 @@
+"""
+    GUI for the application
+"""
