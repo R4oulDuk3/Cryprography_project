@@ -11,34 +11,34 @@ class AsymmetricEncryptor:
             AsymmetricEncryptionAlgorithm.ELGAMAL: ElGamalAsymmetricEncryptionStrategy()
         }
 
-    def encrypt(self, public_key, message, algorithm: AsymmetricEncryptionAlgorithm):
+    def encrypt(self, public_key, data, algorithm: AsymmetricEncryptionAlgorithm):
         pass
 
-    def decrypt(self, private_key, message, algorithm: AsymmetricEncryptionAlgorithm):
+    def decrypt(self, private_key, data, algorithm: AsymmetricEncryptionAlgorithm):
         pass
 
 
 class AbstractAsymmetricEncryptionStrategy(ABC):
     @abstractmethod
-    def encrypt(self, public_key, message):
+    def encrypt(self, public_key, data):
         pass
 
     @abstractmethod
-    def decrypt(self, private_key, message):
+    def decrypt(self, private_key, data):
         pass
 
 
 class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
-    def encrypt(self, public_key, message):
+    def encrypt(self, public_key, data):
         raise NotImplementedError()
 
-    def decrypt(self, private_key, message):
+    def decrypt(self, private_key, data):
         raise NotImplementedError()
 
 
 class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
-    def encrypt(self, public_key, message):
+    def encrypt(self, public_key, data):
         raise NotImplementedError()
 
-    def decrypt(self, private_key, message):
+    def decrypt(self, private_key, data):
         raise NotImplementedError()

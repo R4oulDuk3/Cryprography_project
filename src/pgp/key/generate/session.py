@@ -1,6 +1,6 @@
 from abc import abstractmethod, ABC
 
-from src.pgp.consts.consts import SessionKeyGeneratorType
+from src.pgp.consts.consts import SessionKeyGeneratorAlgorithm
 from src.pgp.key.key import Key
 
 
@@ -8,11 +8,11 @@ class SessionKeyGenerator:
 
     def __init__(self):
         self._strategies = {
-            SessionKeyGeneratorType.TRIPLE_DES: TripleDESSessionKeyGeneratorStrategy(),
-            SessionKeyGeneratorType.AES_128: AES128SessionKeyGeneratorStrategy()
+            SessionKeyGeneratorAlgorithm.TRIPLE_DES: TripleDESSessionKeyGeneratorStrategy(),
+            SessionKeyGeneratorAlgorithm.AES_128: AES128SessionKeyGeneratorStrategy()
         }
 
-    def generate_session_key(self, algorithm: SessionKeyGeneratorType) -> Key:
+    def generate_session_key(self, algorithm: SessionKeyGeneratorAlgorithm) -> Key:
         return self._strategies[algorithm].generate_session_key()
 
 

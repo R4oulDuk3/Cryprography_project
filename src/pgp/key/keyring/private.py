@@ -17,7 +17,7 @@ class PrivateKeyRing:
     def delete_private_key(self, key_id: str):
         raise NotImplementedError()
 
-    def get_private_key(self, key_id: int):
+    def get_private_key(self, key_id: int, password: str):
         raise NotImplementedError()
     """
         Увоз и извоз јавног или приватног кључа у .pem формату

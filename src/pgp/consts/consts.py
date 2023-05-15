@@ -31,7 +31,7 @@ class KeyPairGeneratorType:
     ElGamal = 'ElGamal'
 
 
-class SessionKeyGeneratorType:
+class SessionKeyGeneratorAlgorithm:
     TRIPLE_DES = 'TripleDES'
     AES_128 = 'AES128'
 

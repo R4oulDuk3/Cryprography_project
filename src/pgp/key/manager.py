@@ -35,6 +35,12 @@ class KeyManager:
         треба да буду јасно видљиви на корисничком интерфејсу...
     """
 
+    def get_public_key(self, recipient_email: str):
+        return self._public_key_ring.get_public_key(recipient_email)
+
+    def get_private_key(self, private_key_id: str, password: str):
+        return self._private_key_ring.get_private_key(private_key_id, password)
+
     def get_public_keyring_all_rows(self):
         return self._public_key_ring.get_all_rows()
 

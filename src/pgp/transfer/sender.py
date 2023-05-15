@@ -1,4 +1,6 @@
 from src.pgp.compression.compressor import Compressor
+from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, AsymmetricEncryptionAlgorithm, \
+    SessionKeyGeneratorAlgorithm
 from src.pgp.conversion.converter import Convertor
 from src.pgp.encryption.asymmetric import AsymmetricEncryptor
 from src.pgp.encryption.symmetric import SymmetricEncryptor
@@ -29,20 +31,16 @@ class Sender:
         self.convertor = convertor
         self.session_key_generator = session_key_generator
 
-    def prepare_message(self, message: str, recipient_email: str, signing_private_key_id: str) -> PGPMessage:
-        recipient_public_key = self.key_manager.get_public_key(recipient_email)
-        message_bytes = message.encode()
-        session_key = self.session_key_generator.generate_session_key()
-        encrypted_message = self.symmetric_encryptor.encrypt(message_bytes, session_key)
-        encrypted_session_key = self.asymmetric_encryptor.encrypt(session_key, recipient_public_key)
-        message = PGPMessage(
-            recipient_public_key_id=recipient_public_key.key_id,
-            session_key=encrypted_session_key,
-            sender_public_key_id=signing_private_key_id,
-            data=encrypted_message
-        )
-        signed_message_packet = self.message_signer.sign(message, signing_private_key_id)
-        return signed_message_packet
+    def prepare_message(self, data: str, recipient_email: str, signing_private_key_id: str,
+                        session_key_generator_algorithm: SessionKeyGeneratorAlgorithm,
+                        symmetric_encryption_algorithm: SymmetricEncryptionAlgorithm,
+                        asymmetric_encryption_algorithm: AsymmetricEncryptionAlgorithm) -> PGPMessage:
+        session_key = self.session_key_generator.generate_session_key(algorithm=session_key_generator_algorithm)
+
+        ecnrypted_data = self.symmetric_encryptor.encrypt(data=data, session_key=session_key,
+                                                          algorithm=symmetric_encryption_algorithm)
+
+        encrypted_session_key = self.asymmetric_encryptor.encrypt(public_key=self.key_manager.get_public_key(recipient_email))
 
     def send(self, message: str, recipient_email: str, singing_private_key_id: str):
         message = self.prepare_message(message, recipient_email, singing_private_key_id)

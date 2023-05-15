@@ -10,28 +10,34 @@ class SymmetricEncryptor:
             SymmetricEncryptionAlgorithm.AES_128: AES128SymmetricEncryptionStrategy()
         }
 
+    def encrypt(self, session_key, data, algorithm: SymmetricEncryptionAlgorithm):
+        return self._algorithms[algorithm].encrypt(session_key, data)
+
+    def decrypt(self, session_key, data, algorithm: SymmetricEncryptionAlgorithm):
+        return self._algorithms[algorithm].decrypt(session_key, data)
+
 
 class AbstractSymmetricEncryptionStrategy(ABC):
     @abstractmethod
-    def encrypt(self, session_key, message):
+    def encrypt(self, session_key, data):
         pass
 
     @abstractmethod
-    def decrypt(self, session_key, message):
+    def decrypt(self, session_key, data):
         pass
 
 
 class TripleDESSymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
-    def encrypt(self, session_key, message):
+    def encrypt(self, session_key, data):
         raise NotImplementedError()
 
-    def decrypt(self, session_key, message):
+    def decrypt(self, session_key, data):
         raise NotImplementedError()
 
 
 class AES128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
-    def encrypt(self, session_key, message):
+    def encrypt(self, session_key, data):
         raise NotImplementedError()
 
-    def decrypt(self, session_key, message):
+    def decrypt(self, session_key, data):
         raise NotImplementedError()
