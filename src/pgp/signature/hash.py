@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from Crypto.Hash import SHA1
 
 
 class Hasher(ABC):
@@ -9,4 +10,7 @@ class Hasher(ABC):
 
 class SHA1Hasher(Hasher):
     def hash(self, message: str) -> str:
-        pass
+        byte_message = message.encode('utf-8')
+        sha1_hash = SHA1.new(byte_message)
+        byte_hash = sha1_hash.digest()
+        return byte_hash.hex()
