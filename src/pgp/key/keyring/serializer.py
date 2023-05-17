@@ -15,6 +15,13 @@ def _private_ring_json_verify_all_atributes_exist(key_json: dict):
             raise ValueError(f"{attribute} is missing from key_json")
 
 
+def conclude_pem_algorithm(key_pem: str) -> AsymmetricEncryptionAlgorithm:
+    if "RSA" in key_pem:
+        return AsymmetricEncryptionAlgorithm.RSA
+    else:
+        raise ValueError("Invalid algorithm")
+
+
 class KeySerializer:
     def __init__(self):
         self._symmetric_encryptor = SymmetricEncryptor()
@@ -82,24 +89,45 @@ class KeySerializer:
     def public_ring_public_key_to_json(self, key: PublicKey):
         raise NotImplementedError()
 
-    def import_private_key_from_pem(self, private_key_pem_path: str, algorithm: Enum) -> PrivateKey:
+    def import_private_key_from_pem(self, private_key_pem_path: str) -> PrivateKey:
         with open(private_key_pem_path, 'r') as f:
-            key_pem = f.read()
+            private_key_pem = f.read()
+        algorithm = conclude_pem_algorithm(key_pem=private_key_pem)
+
         if algorithm == AsymmetricEncryptionAlgorithm.RSA:
-            return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(key_pem.encode(UTF_8)))
+            return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(private_key_pem.encode(UTF_8)))
         else:
             raise NotImplementedError()
 
-    def import_public_key_from_pem(self, private_key_pem_path: str, algorithm: Enum) -> PublicKey:
-        with open(private_key_pem_path, 'r') as f:
-            key_pem = f.read()
+    def import_public_key_from_pem(self, public_key_pem_path: str) -> PublicKey:
+        with open(public_key_pem_path, 'r') as f:
+            public_key_pem = f.read()
+        algorithm = conclude_pem_algorithm(key_pem=public_key_pem)
+
         if algorithm == AsymmetricEncryptionAlgorithm.RSA:
-            return RSAPublicKey(rsa.PublicKey.load_pkcs1(key_pem.encode(UTF_8)))
+            return RSAPublicKey(rsa.PublicKey.load_pkcs1(public_key_pem.encode(UTF_8)))
+        else:
+            raise NotImplementedError()
+
+    def export_private_key_to_pem(self, key_pair: KeyPair, private_key_pem_path: str):
+        if key_pair.get_algorithm() == AsymmetricEncryptionAlgorithm.RSA:
+            with open(private_key_pem_path, 'w') as f:
+                f.write(key_pair.get_private_key().get_key().save_pkcs1().decode(UTF_8))
+        else:
+            raise NotImplementedError()
+
+    def export_public_key_to_pem(self, key_pair: KeyPair, public_key_pem_path: str):
+        if key_pair.get_algorithm() == AsymmetricEncryptionAlgorithm.RSA:
+            with open(public_key_pem_path, 'w') as f:
+                f.write(key_pair.get_public_key().get_key().save_pkcs1().decode(UTF_8))
         else:
             raise NotImplementedError()
 
 
-def test_key_pair_to_json():
+
+
+
+def test_key_serializer():
     (public_key, private_key) = rsa.newkeys(1024)
     key_serializer = KeySerializer()
     print("Public key: " + str(public_key))
@@ -121,6 +149,15 @@ def test_key_pair_to_json():
     print("Public key: " + str(key_pair.get_public_key().get_key()))
     print("Private key: " + str(key_pair.get_private_key().get_key()))
 
+    key_serializer.export_private_key_to_pem(key_pair=key_pair, private_key_pem_path="private_key.pem")
+    key_serializer.export_public_key_to_pem(key_pair=key_pair, public_key_pem_path="public_key.pem")
+
+    private_key = key_serializer.import_private_key_from_pem(private_key_pem_path="private_key.pem")
+    public_key = key_serializer.import_public_key_from_pem(public_key_pem_path="public_key.pem")
+
+    print("Public key: " + str(public_key.get_key()))
+    print("Private key: " + str(private_key.get_key()))
+
 
 if __name__ == "__main__":
-    test_key_pair_to_json()
+    test_key_serializer()
