@@ -42,7 +42,7 @@ class KeySerializer:
             algorithm=SymmetricEncryptionAlgorithm.CAST_128
         )
 
-    def private_ring_json_to_key_pair(self, key_json: dict, password: str) -> KeyPair:
+    def key_pair_json_deserialize(self, key_json: dict, password: str) -> KeyPair:
 
         _private_ring_json_verify_all_atributes_exist(key_json=key_json)
         private_key: str = self._decrypt_private_key(key_json=key_json, password=password)
@@ -58,10 +58,10 @@ class KeySerializer:
         else:
             raise NotImplementedError()
 
-    def public_ring_json_to_public_key(self, key: str, algorithm: SymmetricEncryptionAlgorithm) -> SessionKey:
+    def public_key_json_deserialize(self, key: str, algorithm: SymmetricEncryptionAlgorithm) -> SessionKey:
         raise NotImplementedError()
 
-    def private_ring_key_pair_to_json(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
+    def key_pair_json_serialize(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
         hashed_password_with_salt: bytes = self._hasher.hash(message=f"{password}:{PRIVATE_KEY_RING_SALT}")
         hashed_password: bytes = self._hasher.hash(message=password)
         print("Len hashed password: " + str(len(hashed_password)))
@@ -86,7 +86,7 @@ class KeySerializer:
         else:
             raise NotImplementedError()
 
-    def public_ring_public_key_to_json(self, key: PublicKey):
+    def public_key_json_serialize(self, key: PublicKey):
         raise NotImplementedError()
 
     def import_private_key_from_pem(self, private_key_pem_path: str) -> PrivateKey:
@@ -124,9 +124,6 @@ class KeySerializer:
             raise NotImplementedError()
 
 
-
-
-
 def test_key_serializer():
     (public_key, private_key) = rsa.newkeys(1024)
     key_serializer = KeySerializer()
@@ -137,7 +134,7 @@ def test_key_serializer():
         private_key=RSAPrivateKey(private_key),
         algorithm=AsymmetricEncryptionAlgorithm.RSA
     )
-    key_pair_json = key_serializer.private_ring_key_pair_to_json(
+    key_pair_json = key_serializer.key_pair_json_serialize(
         key_pair=key_pair,
         password="password",
         user_name="test",
@@ -145,7 +142,7 @@ def test_key_serializer():
     )
     print(key_pair_json)
 
-    key_pair = key_serializer.private_ring_json_to_key_pair(key_json=key_pair_json, password="password")
+    key_pair = key_serializer.key_pair_json_deserialize(key_json=key_pair_json, password="password")
     print("Public key: " + str(key_pair.get_public_key().get_key()))
     print("Private key: " + str(key_pair.get_private_key().get_key()))
 
