@@ -1,4 +1,5 @@
-from src.pgp.key.generate.keypair import KeyPairGenerator, KEY_SIZES, KeyPairGeneratorType
+from src.pgp.consts.consts import KEY_SIZES, KeyPairGeneratorType
+from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.keyring.private import PrivateKeyRing
 from src.pgp.key.keyring.public import PublicKeyRing
 
