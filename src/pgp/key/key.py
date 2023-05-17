@@ -33,17 +33,31 @@ class SessionKey(Key, ABC):
         super().__init__(key, KeyType.SESSION, algorithm)
 
 
+class CAST128SessionKey(SessionKey):
+    def __init__(self, key: bytes):
+        if not isinstance(key, bytes):
+            raise TypeError("key must be of type str")
+        super().__init__(key, SymmetricEncryptionAlgorithm.CAST_128)
+
+    def get_key(self) -> bytes:
+        return self._key
+
+
 class KeyPair:
 
-    def __init__(self, public_key: Key, private_key: Key):
+    def __init__(self, public_key: Key, private_key: Key, algorithm: AsymmetricEncryptionAlgorithm | SigningAlgorithm):
         self._public_key = public_key
         self._private_key = private_key
+        self._algorithm = algorithm
 
     def get_public_key(self):
         return self._public_key
 
     def get_private_key(self):
         return self._private_key
+
+    def get_algorithm(self):
+        return self._algorithm
 
 
 class RSAPrivateKey(PrivateKey):
@@ -54,7 +68,6 @@ class RSAPrivateKey(PrivateKey):
 
     def get_key(self) -> rsa.PrivateKey:
         return self._key
-
 
 class RSAPublicKey(PublicKey):
     def __init__(self, key: rsa.PublicKey):
