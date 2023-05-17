@@ -1,12 +1,13 @@
-from src.pgp.key.generate.keypair import KeyPairGenerator, KEY_SIZES, KeyPairGeneratorType
-from src.pgp.key.keyring.private import PrivateKeyRing
+from src.pgp.consts.consts import KEY_SIZES, KeyPairGeneratorType
+from src.pgp.key.generate.keypair import KeyPairGenerator
+from src.pgp.key.keyring.secret import SecretKeyRing
 from src.pgp.key.keyring.public import PublicKeyRing
 
 
 class KeyManager:
     def __init__(self, user_id: str):
         self._user_id = user_id
-        self._private_key_ring = PrivateKeyRing(user_id)
+        self._private_key_ring = SecretKeyRing(user_id)
         self._public_key_ring = PublicKeyRing(user_id)
         self._key_pair_generator = KeyPairGenerator(KEY_SIZES)
 
@@ -38,8 +39,8 @@ class KeyManager:
     def get_public_key(self, recipient_email: str):
         return self._public_key_ring.get_public_key(recipient_email)
 
-    def get_private_key(self, private_key_id: str, password: str):
-        return self._private_key_ring.get_private_key(private_key_id, password)
+    def get_private_key(self, user_email: str, password: str):
+        return self._private_key_ring.get_key_pair_by_user_id(user_email=user_email, password=password)
 
     def get_public_keyring_all_rows(self):
         return self._public_key_ring.get_all_rows()
