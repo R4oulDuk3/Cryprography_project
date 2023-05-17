@@ -3,6 +3,9 @@ from enum import Enum
 PRIVATE_KEY_RING_SALT = 'private_key_ring_salt'
 
 UTF_8 = 'utf-8'
+SECRET_KEY_RING_FILE = 'secret_key_ring.json'
+DATA_DIR = 'data'
+PUBLIC_KEY_RING_FILE = 'public_key_ring.json'
 
 class KeyPairPrivateRingAttributes(Enum):
     USER_NAME = 'user_name'
