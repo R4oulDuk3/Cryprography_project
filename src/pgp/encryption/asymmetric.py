@@ -35,13 +35,19 @@ class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
 
 class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
     def encrypt(self, public_key, data):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
         if isinstance(public_key, str):
             public_key = rsa.PublicKey.load_pkcs1(public_key.encode('utf-8'))
 
-        encrypted_data = rsa.encrypt(data.encode('utf-8'), public_key)
+        encrypted_data = rsa.encrypt(data, public_key)
         return encrypted_data
 
     def decrypt(self, private_key, data):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+
         if isinstance(private_key, str):
             private_key = rsa.PrivateKey.load_pkcs1(private_key.encode('utf-8'))
 
@@ -57,11 +63,12 @@ if __name__ == "__main__":
     encryptor = AsymmetricEncryptor()
     enciphered_message = encryptor.encrypt(public_key, message, AsymmetricEncryptionAlgorithm.RSA)
     deciphered_message = encryptor.decrypt(private_key, enciphered_message, AsymmetricEncryptionAlgorithm.RSA)
-    print("-------------------------------------")
-    print("\t\t\tRSA")
+    print("============================================")
+    print("\t" * 2 + "RSA encryption/decryption")
+    print("--------------------------------------------")
     print(f"Original message: {message}")
     print(f"Enciphered message: {enciphered_message.hex()}")
     print(f"Deciphered message: {deciphered_message}")
-    print("-------------------------------------")
+    print("============================================")
 
     # ElGamal encryption/decryption

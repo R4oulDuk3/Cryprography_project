@@ -50,26 +50,50 @@ class DSASigningAlgorithmStrategy(SigningAlgorithmStrategy):
 
 
 if __name__ == "__main__":
-    # RSA sign test
-    (public_key, private_key) = rsa.newkeys(1024)
-    message = 'Exemplary message'
+    # RSA sign test byte
+    (public_key_rsa_b, private_key_rsa_b) = rsa.newkeys(1024)
+    message_rsa_b = b'My byte example.'
     signer = Signer()
-    signature = signer.sign(private_key, message, SigningAlgorithm.RSA)
+    signature_rsa_s = signer.sign(private_key_rsa_b, message_rsa_b, SigningAlgorithm.RSA)
     try:
-        rsa.verify(message.encode('utf-8'), signature, public_key)
+        rsa.verify(message_rsa_b, signature_rsa_s, public_key_rsa_b)
         print("RSA signature verified.")
     except rsa.VerificationError:
         print("RSA signature failed.")
 
-    # DSA sign test
-    private_key = DSA.generate(1024)
-    public_key = private_key.publickey()
-    message = 'Exemplary message'
-    signer = Signer()
-    signature = signer.sign(private_key, message, SigningAlgorithm.DSA)
+    # DSA sign test byte
+    private_key_dsa_b = DSA.generate(1024)
+    message_dsa_b = b'My byte example.'
+    public_key_dsa_b = private_key_dsa_b.publickey()
+    signature_dsa_b = signer.sign(private_key_dsa_b, message_dsa_b, SigningAlgorithm.DSA)
     try:
-        verifier = DSS.new(public_key, 'fips-186-3')
-        verifier.verify(SHA1.new(message.encode('utf-8')), signature)
+        verifier = DSS.new(public_key_dsa_b, 'fips-186-3')
+        verifier.verify(SHA1.new(message_dsa_b), signature_dsa_b)
         print("DSA signature verified.")
     except ValueError:
         print("DSA signature failed.")
+
+
+    # RSA sign test string
+    (public_key_rsa_s, private_key_rsa_s) = rsa.newkeys(1024)
+    message_rsa_s = 'My string example.'
+    signature_rsa_s = signer.sign(private_key_rsa_s, message_rsa_s, SigningAlgorithm.RSA)
+    try:
+        rsa.verify(message_rsa_s.encode('utf-8'), signature_rsa_s, public_key_rsa_s)
+        print("RSA signature verified.")
+    except rsa.VerificationError:
+        print("RSA signature failed.")
+
+    # DSA sign test string
+    private_key_dsa_s = DSA.generate(1024)
+    message_dsa_s = 'My string example.'
+    public_key_dsa_s = private_key_dsa_s.publickey()
+    signature_dsa_s = signer.sign(private_key_dsa_s, message_dsa_s, SigningAlgorithm.DSA)
+    try:
+        verifier = DSS.new(public_key_dsa_s, 'fips-186-3')
+        verifier.verify(SHA1.new(message_dsa_s.encode('utf-8')), signature_dsa_s)
+        print("DSA signature verified.")
+    except ValueError:
+        print("DSA signature failed.")
+
+
