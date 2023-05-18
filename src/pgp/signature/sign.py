@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Union
-from src.pgp.consts.consts import SigningAlgorithm
+from src.pgp.consts.consts import SigningAlgorithm, KeyPairGeneratorType
 import rsa
 from Crypto.PublicKey import DSA
 from Crypto.Signature import DSS
 from Crypto.Hash import SHA1
+
+from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import RSAPrivateKey, RSAPublicKey, DSAPrivateKey, DSAPublicKey
 
 
@@ -58,14 +60,13 @@ if __name__ == "__main__":
 
     # DSA sign test byte
     try:
-        private_key_dsa_s_obj = DSAPrivateKey(DSA.generate(1024))
-        public_key_dsa_s_obj = DSAPublicKey(private_key_dsa_s_obj.get_key().public_key())
+        DSA_key_pair = KeyPairGenerator().generate_key_pair(KeyPairGeneratorType.DSA, KeyPairGenerator().get_available_key_sizes()[0])
         message_dsa_s = 'My string example.'
-        signature_dsa_s = DSASigningAlgorithmStrategy().sign(private_key_dsa_s_obj, message_dsa_s)
-        verifier = DSS.new(public_key_dsa_s_obj.get_key(), 'fips-186-3')
+        signature_dsa_s = Signer().sign(DSA_key_pair.get_private_key(), message_dsa_s, SigningAlgorithm.DSA)
+        verifier = DSS.new(DSA_key_pair.get_public_key().get_key(), 'fips-186-3')
         verifier.verify(SHA1.new(message_dsa_s.encode('utf-8')), signature_dsa_s)
         print("DSA signature verified.")
     except (TypeError, ValueError) as e:
-        print("DSA signature failed.")
+        print(f"DSA signature failed. {e}")
 
 

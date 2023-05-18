@@ -23,7 +23,7 @@ class SessionKeyGeneratorStrategy(ABC):
 
 
 class TripleDESSessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
-    def generate_session_key(self) -> SessionKey:
+    def generate_session_key(self) -> TripleDESSessionKey:
         return TripleDESSessionKey(get_random_bytes(24))
 
 

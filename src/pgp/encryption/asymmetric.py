@@ -62,8 +62,8 @@ if __name__ == "__main__":
         public_key_obj = RSAPublicKey(public_key)
         private_key_obj = RSAPrivateKey(private_key)
         message = 'My RSA message'
-        enciphered_message = RSASymmetricEncryptionStrategy().encrypt(public_key_obj, message)
-        deciphered_message = RSASymmetricEncryptionStrategy().decrypt(private_key_obj, enciphered_message)
+        enciphered_message = AsymmetricEncryptor().encrypt(public_key_obj, message, AsymmetricEncryptionAlgorithm.RSA)
+        deciphered_message = AsymmetricEncryptor().decrypt(private_key_obj, enciphered_message, AsymmetricEncryptionAlgorithm.RSA)
         print("============================================")
         print("\t" * 2 + "RSA encryption/decryption")
         print("--------------------------------------------")
