@@ -17,6 +17,9 @@ class Key(ABC):
     def get_key(self):
         raise NotImplementedError()
 
+    def get_algorithm(self):
+        return self._algorithm
+
 
 class PrivateKey(Key, ABC):
 

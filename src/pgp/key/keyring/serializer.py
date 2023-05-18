@@ -3,7 +3,7 @@ from enum import Enum
 import rsa
 
 from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, SymmetricEncryptionAlgorithm, SigningAlgorithm, \
-    KeyPairPrivateRingAttributes, UTF_8, PRIVATE_KEY_RING_SALT
+    KeyPairPrivateRingAttributes, UTF_8, PRIVATE_KEY_RING_SALT, PublicKeyPublicRingAttributes
 from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.key.key import SessionKey, PrivateKey, PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
 from src.pgp.signature.hash import SHA1Hasher
@@ -29,7 +29,7 @@ class KeySerializer:
 
     def _validate_password(self, password: str, key_json: dict):
         hashed_password_with_salt = self._hasher.hash(message=f"{password}:{PRIVATE_KEY_RING_SALT}")
-        if hashed_password_with_salt != key_json[KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value]:
+        if hashed_password_with_salt != bytes.fromhex(key_json[KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value]):
             raise ValueError("Invalid password")
 
     def _decrypt_private_key(self, key_json: dict, password: str) -> str:
@@ -37,7 +37,7 @@ class KeySerializer:
         hashed_password = self._hasher.hash(message=password)
         cast128_session_key = CAST128SessionKey(key=hashed_password[:16])
         return self._symmetric_encryptor.decrypt(
-            ciphertext=key_json[KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value],
+            ciphertext=bytes.fromhex(key_json[KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value]),
             session_key=cast128_session_key,
             algorithm=SymmetricEncryptionAlgorithm.CAST_128
         )
@@ -47,10 +47,10 @@ class KeySerializer:
         _private_ring_json_verify_all_atributes_exist(key_json=key_json)
         private_key: str = self._decrypt_private_key(key_json=key_json, password=password)
 
-        if key_json[KeyPairPrivateRingAttributes.ALGORITHM.value] == AsymmetricEncryptionAlgorithm.RSA:
+        if key_json[KeyPairPrivateRingAttributes.ALGORITHM.value] == AsymmetricEncryptionAlgorithm.RSA.value:
             return KeyPair(
                 public_key=RSAPublicKey(
-                    rsa.PublicKey.load_pkcs1(key_json[KeyPairPrivateRingAttributes.PUBLIC_KEY.value])),
+                    rsa.PublicKey.load_pkcs1(bytes.fromhex(key_json[KeyPairPrivateRingAttributes.PUBLIC_KEY.value]))),
                 private_key=RSAPrivateKey(
                     rsa.PrivateKey.load_pkcs1(private_key.encode(UTF_8))),
                 algorithm=AsymmetricEncryptionAlgorithm.RSA
@@ -58,8 +58,15 @@ class KeySerializer:
         else:
             raise NotImplementedError()
 
-    def public_key_json_deserialize(self, key: str, algorithm: SymmetricEncryptionAlgorithm) -> SessionKey:
-        raise NotImplementedError()
+    def public_key_json_deserialize(self, public_key_json: dict) -> PublicKey:
+        if PublicKeyPublicRingAttributes.ALGORITHM.value not in public_key_json:
+            raise ValueError("Algorithm is missing from key_json")
+        if public_key_json[PublicKeyPublicRingAttributes.ALGORITHM.value] == AsymmetricEncryptionAlgorithm.RSA.value:
+            return RSAPublicKey(
+                rsa.PublicKey.load_pkcs1(bytes.fromhex(public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value]))
+            )
+        else:
+            raise NotImplementedError()
 
     def key_pair_json_serialize(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
         hashed_password_with_salt: bytes = self._hasher.hash(message=f"{password}:{PRIVATE_KEY_RING_SALT}")
@@ -75,10 +82,10 @@ class KeySerializer:
                 algorithm=SymmetricEncryptionAlgorithm.CAST_128
             )
             key_json = {
-                KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value: hashed_password_with_salt,
-                KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value: encrypted_private_key,
-                KeyPairPrivateRingAttributes.PUBLIC_KEY.value: public_key_bytes,
-                KeyPairPrivateRingAttributes.ALGORITHM.value: AsymmetricEncryptionAlgorithm.RSA,
+                KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value: hashed_password_with_salt.hex(),
+                KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value: encrypted_private_key.hex(),
+                KeyPairPrivateRingAttributes.PUBLIC_KEY.value: public_key_bytes.hex(),
+                KeyPairPrivateRingAttributes.ALGORITHM.value: AsymmetricEncryptionAlgorithm.RSA.value,
                 KeyPairPrivateRingAttributes.USER_NAME.value: user_name,
                 KeyPairPrivateRingAttributes.USER_EMAIL.value: user_email
             }
@@ -86,8 +93,14 @@ class KeySerializer:
         else:
             raise NotImplementedError()
 
-    def public_key_json_serialize(self, key: PublicKey):
-        raise NotImplementedError()
+    def public_key_json_serialize(self, public_key: PublicKey) -> dict:
+        if public_key.get_algorithm() == AsymmetricEncryptionAlgorithm.RSA:
+            return {
+                PublicKeyPublicRingAttributes.PUBLIC_KEY.value: public_key.get_key().save_pkcs1().hex(),
+                PublicKeyPublicRingAttributes.ALGORITHM.value: AsymmetricEncryptionAlgorithm.RSA.value
+            }
+        else:
+            raise NotImplementedError()
 
     def import_private_key_from_pem(self, private_key_pem_path: str) -> PrivateKey:
         with open(private_key_pem_path, 'r') as f:
@@ -154,6 +167,11 @@ def test_key_serializer():
 
     print("Public key: " + str(public_key.get_key()))
     print("Private key: " + str(private_key.get_key()))
+
+    public_key_serialized = key_serializer.public_key_json_serialize(public_key=public_key)
+    print(public_key_serialized)
+    public_key_deserialized = key_serializer.public_key_json_deserialize(public_key_json=public_key_serialized)
+    print("Public key: " + str(public_key_deserialized.get_key()))
 
 
 if __name__ == "__main__":
