@@ -7,24 +7,25 @@
 
 from abc import abstractmethod, ABC
 
+import rsa
 from Crypto.PublicKey import DSA
 
-from src.pgp.consts.consts import KeyPairGeneratorType, AsymmetricEncryptionAlgorithm, SigningAlgorithm, KEY_SIZES
-from src.pgp.key.key import KeyPair, Key, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
-import rsa
+from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, SigningAlgorithm, KEY_SIZES
+from src.pgp.key.key import KeyPair, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
 
 
 class KeyPairGenerator:
 
     def __init__(self):
         self._strategies = {
-            KeyPairGeneratorType.RSA: KeyPairGeneratorStrategyRSA(),
-            KeyPairGeneratorType.DSA: KeyPairGeneratorStrategyDSA(),
-            KeyPairGeneratorType.ElGamal: KeyPairGeneratorStrategyElGamal()
+            AsymmetricEncryptionAlgorithm.RSA: KeyPairGeneratorStrategyRSA(),
+            AsymmetricEncryptionAlgorithm.ELGAMAL: KeyPairGeneratorStrategyElGamal(),
+            SigningAlgorithm.RSA: KeyPairGeneratorStrategyRSA(),
+            SigningAlgorithm.DSA: KeyPairGeneratorStrategyDSA(),
         }
         self._key_sizes = KEY_SIZES
 
-    def generate_key_pair(self, algorithm: KeyPairGeneratorType, key_size: int) -> KeyPair:
+    def generate_key_pair(self, algorithm: AsymmetricEncryptionAlgorithm | SigningAlgorithm, key_size: int) -> KeyPair:
         return self._strategies[algorithm].generate_key_pair(key_size)
 
     def get_available_algorithms(self):
@@ -68,3 +69,18 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
         pass
+
+
+def test_key_gen():
+    key_pair_generator = KeyPairGenerator()
+    key_pair = key_pair_generator.generate_key_pair(AsymmetricEncryptionAlgorithm.RSA, 1024)
+    print(key_pair.get_private_key().get_key())
+    print(key_pair.get_public_key().get_key())
+
+    key_pair = key_pair_generator.generate_key_pair(AsymmetricEncryptionAlgorithm.RSA, 2048)
+    print(key_pair.get_private_key().get_key())
+    print(key_pair.get_public_key().get_key())
+
+
+if __name__ == '__main__':
+    test_key_gen()
