@@ -76,15 +76,20 @@ class RSAPrivateKey(PrivateKey):
     def __init__(self, key: rsa.PrivateKey):
         if not isinstance(key, rsa.PrivateKey):
             raise TypeError("key must be of type rsa.PrivateKey")
+        if key.n.bit_length() != 1024 and key.n.bit_length() != 2048:
+            raise ValueError("key size must be 1024 or 2048")
         super().__init__(key, AsymmetricEncryptionAlgorithm.RSA)
 
     def get_key(self) -> rsa.PrivateKey:
         return self._key
 
+
 class RSAPublicKey(PublicKey):
     def __init__(self, key: rsa.PublicKey):
         if not isinstance(key, rsa.PublicKey):
             raise TypeError("key must be of type rsa.PublicKey")
+        if key.n.bit_length() != 1024 and key.n.bit_length() != 2048:
+            raise ValueError("key size must be 1024 or 2048")
         super().__init__(key, AsymmetricEncryptionAlgorithm.RSA)
 
     def get_key(self) -> rsa.PublicKey:
