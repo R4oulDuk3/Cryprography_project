@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, SessionKeyGeneratorAlgorithm
+from src.pgp.consts.consts import SymmetricEncryptionAlgorithm
 from Crypto.Cipher import DES3
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
@@ -14,7 +14,6 @@ class SymmetricEncryptor:
     def __init__(self):
         self._algorithms = {
             SymmetricEncryptionAlgorithm.TRIPLE_DES: TripleDESSymmetricEncryptionStrategy(),
-            SymmetricEncryptionAlgorithm.AES_128: AES128SymmetricEncryptionStrategy(),
             SymmetricEncryptionAlgorithm.CAST_128: CAST128SymmetricEncryptionStrategy()
         }
 
@@ -33,14 +32,6 @@ class AbstractSymmetricEncryptionStrategy(ABC):
     @abstractmethod
     def decrypt(self, session_key: SessionKey, ciphertext: bytes):
         pass
-
-
-class AES128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
-    def encrypt(self, session_key: SessionKey, plaintext: str):
-        raise NotImplementedError()
-
-    def decrypt(self, session_key: SessionKey, ciphertext: bytes):
-        raise NotImplementedError()
 
 
 class TripleDESSymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
@@ -94,7 +85,7 @@ def test_tripledes():
         print("\t" * 2 + "TripleDES encryption/decryption")
         print("--------------------------------------------")
         data = 'TripleDES check sentence.'
-        session_key = SessionKeyGenerator().generate_session_key(SessionKeyGeneratorAlgorithm.TRIPLE_DES)
+        session_key = SessionKeyGenerator().generate_session_key(SymmetricEncryptionAlgorithm.TRIPLE_DES)
         encrypted_data = SymmetricEncryptor().encrypt(session_key, data, SymmetricEncryptionAlgorithm.TRIPLE_DES)
         decry_data = SymmetricEncryptor().decrypt(session_key, encrypted_data, SymmetricEncryptionAlgorithm.TRIPLE_DES)
         print(encrypted_data)
@@ -107,4 +98,3 @@ def test_tripledes():
 if __name__ == "__main__":
     test_tripledes()
     test_cast128()
-

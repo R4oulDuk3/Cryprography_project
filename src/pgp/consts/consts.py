@@ -30,7 +30,6 @@ class AsymmetricEncryptionAlgorithm(Enum):
 
 class SymmetricEncryptionAlgorithm(Enum):
     TRIPLE_DES = '3DES'
-    AES_128 = 'AES128'
     CAST_128 = 'CAST128'
 
 
@@ -53,21 +52,6 @@ class KeyPairGeneratorType:
     DSA = 'DSA'
     ElGamal = 'ElGamal'
 
-
-class SessionKeyGeneratorAlgorithm:
-    TRIPLE_DES = 'TripleDES'
-    AES_128 = 'AES128'
-
-
 class KeyUsage(Enum):
     SIGN = 'sign'
     ENCRYPT = 'encrypt'
-
-
-AlrgorithmToKeyUsage = {
-    AsymmetricEncryptionAlgorithm.RSA: [KeyUsage.SIGN, KeyUsage.ENCRYPT],
-    AsymmetricEncryptionAlgorithm.ELGAMAL: [KeyUsage.ENCRYPT],
-    SymmetricEncryptionAlgorithm.TRIPLE_DES: [KeyUsage.ENCRYPT],
-    SymmetricEncryptionAlgorithm.AES_128: [KeyUsage.ENCRYPT]
-
-}
