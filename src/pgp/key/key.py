@@ -36,8 +36,20 @@ class SessionKey(Key, ABC):
 class CAST128SessionKey(SessionKey):
     def __init__(self, key: bytes):
         if not isinstance(key, bytes):
-            raise TypeError("key must be of type str")
+            raise TypeError("key must be of type bytes")
         super().__init__(key, SymmetricEncryptionAlgorithm.CAST_128)
+
+    def get_key(self) -> bytes:
+        return self._key
+
+
+class TripleDESSessionKey(SessionKey):
+    def __init__(self, key: bytes):
+        if not isinstance(key, bytes):
+            raise TypeError("key must be of type bytes")
+        if len(key) != 24:
+            raise ValueError("key must be 24 bytes in length")
+        super().__init__(key, SymmetricEncryptionAlgorithm.TRIPLE_DES)
 
     def get_key(self) -> bytes:
         return self._key
