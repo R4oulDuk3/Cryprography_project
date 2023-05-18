@@ -7,20 +7,22 @@
 
 from abc import abstractmethod, ABC
 
-from src.pgp.consts.consts import KeyPairGeneratorType, AsymmetricEncryptionAlgorithm
-from src.pgp.key.key import KeyPair, Key, RSAPublicKey, RSAPrivateKey
+from Crypto.PublicKey import DSA
+
+from src.pgp.consts.consts import KeyPairGeneratorType, AsymmetricEncryptionAlgorithm, SigningAlgorithm, KEY_SIZES
+from src.pgp.key.key import KeyPair, Key, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
 import rsa
 
 
 class KeyPairGenerator:
 
-    def __init__(self, key_sizes: list):
+    def __init__(self):
         self._strategies = {
             KeyPairGeneratorType.RSA: KeyPairGeneratorStrategyRSA(),
             KeyPairGeneratorType.DSA: KeyPairGeneratorStrategyDSA(),
             KeyPairGeneratorType.ElGamal: KeyPairGeneratorStrategyElGamal()
         }
-        self._key_sizes = key_sizes
+        self._key_sizes = KEY_SIZES
 
     def generate_key_pair(self, algorithm: KeyPairGeneratorType, key_size: int) -> KeyPair:
         return self._strategies[algorithm].generate_key_pair(key_size)
@@ -53,7 +55,13 @@ class KeyPairGeneratorStrategyRSA(KeyPairGeneratorStrategy):
 # Note: Ovaj moze da se koristi za potpisivanje
 class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
-        pass
+        private_key = DSAPrivateKey(DSA.generate(key_size))
+        public_key = DSAPublicKey(private_key.get_key().public_key())
+        return KeyPair(
+            private_key=private_key,
+            public_key=public_key,
+            algorithm=SigningAlgorithm.DSA
+        )
 
 
 # Note: Ovaj moze da se koristi za enkripciju

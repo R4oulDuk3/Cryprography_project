@@ -1,10 +1,12 @@
 from abc import ABC, abstractmethod
-from src.pgp.consts.consts import SymmetricEncryptionAlgorithm
+from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, SessionKeyGeneratorAlgorithm
 from Crypto.Cipher import DES3
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, UTF_8
 from Crypto.Cipher import CAST
+
+from src.pgp.key.generate.session import TripleDESSessionKeyGeneratorStrategy, SessionKeyGenerator
 from src.pgp.key.key import CAST128SessionKey, SessionKey, TripleDESSessionKey
 
 
@@ -77,9 +79,9 @@ def test_cast128():
         print("--------------------------------------------")
         plaintext = "hello world"
         key = CAST128SessionKey(b"12345678")
-        ciphertext = CAST128SymmetricEncryptionStrategy().encrypt(key, plaintext)
+        ciphertext = SymmetricEncryptor().encrypt(key, plaintext, SymmetricEncryptionAlgorithm.CAST_128)
         print(ciphertext)
-        print(CAST128SymmetricEncryptionStrategy().decrypt(key, ciphertext))
+        print(SymmetricEncryptor().decrypt(key, ciphertext, SymmetricEncryptionAlgorithm.CAST_128))
     except (TypeError, ValueError) as e:
         print("CAST128 test failed.")
 
@@ -92,11 +94,11 @@ def test_tripledes():
         print("\t" * 2 + "TripleDES encryption/decryption")
         print("--------------------------------------------")
         data = 'TripleDES check sentence.'
-        session_key = TripleDESSessionKey(get_random_bytes(24))
-        encrypted_data = TripleDESSymmetricEncryptionStrategy().encrypt(session_key, data)
+        session_key = SessionKeyGenerator().generate_session_key(SessionKeyGeneratorAlgorithm.TRIPLE_DES)
+        encrypted_data = SymmetricEncryptor().encrypt(session_key, data, SymmetricEncryptionAlgorithm.TRIPLE_DES)
+        decry_data = SymmetricEncryptor().decrypt(session_key, encrypted_data, SymmetricEncryptionAlgorithm.TRIPLE_DES)
         print(encrypted_data)
-        decrypted_data = TripleDESSymmetricEncryptionStrategy().decrypt(session_key, encrypted_data)
-        print(decrypted_data)
+        print(decry_data)
     except (TypeError, ValueError) as e:
         print("TripleDES test failed.")
     print("============================================")
