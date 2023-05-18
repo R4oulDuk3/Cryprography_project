@@ -1,13 +1,12 @@
 from abc import ABC, abstractmethod
-
 from src.pgp.consts.consts import SymmetricEncryptionAlgorithm
 from Crypto.Cipher import DES3
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, UTF_8
 from Crypto.Cipher import CAST
+from src.pgp.key.key import CAST128SessionKey, SessionKey, TripleDESSessionKey
 
-from src.pgp.key.key import CAST128SessionKey, SessionKey
 
 class SymmetricEncryptor:
     def __init__(self):
@@ -34,22 +33,6 @@ class AbstractSymmetricEncryptionStrategy(ABC):
         pass
 
 
-class TripleDESSymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
-    def encrypt(self, session_key, data):
-        if isinstance(data, str):
-            data = data.encode('utf-8')
-        tdes = DES3.new(session_key, DES3.MODE_CFB)
-        iv = tdes.iv
-        encrypted_data = iv + tdes.encrypt(data)
-        return encrypted_data
-
-    def decrypt(self, session_key, data):
-        iv = data[:DES3.block_size]
-        encrypted_data = data[DES3.block_size:]
-        tdes = DES3.new(session_key, DES3.MODE_CFB, iv)
-        decrypted_data = tdes.decrypt(encrypted_data)
-        return decrypted_data.decode('utf-8')
-
 class AES128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
     def encrypt(self, session_key: SessionKey, plaintext: str):
         raise NotImplementedError()
@@ -58,21 +41,23 @@ class AES128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
         raise NotImplementedError()
 
 
+class TripleDESSymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
+    def encrypt(self, session_key: TripleDESSessionKey, data):
+        if isinstance(data, str):
+            data = data.encode('utf-8')
+        tdes = DES3.new(session_key.get_key(), DES3.MODE_CFB)
+        iv = tdes.iv
+        encrypted_data = iv + tdes.encrypt(data)
+        return encrypted_data
 
-def testTripleDes():
-    symmetric_encryptor = SymmetricEncryptor()
-    try:
-        session_key = get_random_bytes(24)
-        adjusted_key = DES3.adjust_key_parity(session_key)
-        data = 'TripleDES check sentence.'
-        encrypted_data = symmetric_encryptor.encrypt(adjusted_key, data, SymmetricEncryptionAlgorithm.TRIPLE_DES)
-        print(encrypted_data)
-        decrypted_data = symmetric_encryptor.decrypt(adjusted_key, encrypted_data,
-                                                     SymmetricEncryptionAlgorithm.TRIPLE_DES)
-        print(decrypted_data)
-    except ValueError:
-        print("TripleDES check failed")
-        
+    def decrypt(self, session_key: TripleDESSessionKey, data):
+        iv = data[:DES3.block_size]
+        encrypted_data = data[DES3.block_size:]
+        tdes = DES3.new(session_key.get_key(), DES3.MODE_CFB, iv)
+        decrypted_data = tdes.decrypt(data[DES3.block_size:])
+        return decrypted_data.decode('utf-8')
+
+
 class CAST128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
     def encrypt(self, session_key: CAST128SessionKey, plaintext: str):
         ciphertext = CAST.new(session_key.get_key(), CAST.MODE_OPENPGP).encrypt(plaintext.encode(UTF_8))
@@ -85,15 +70,39 @@ class CAST128SymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
         return plaintext
 
 
-def testCast128():
-    plaintext = "hello world"
-    key = CAST128SessionKey(b"12345678")
-    ciphertext = CAST128SymmetricEncryptionStrategy().encrypt(key, plaintext)
-    print(ciphertext)
-    print(CAST128SymmetricEncryptionStrategy().decrypt(key, ciphertext))
+def test_cast128():
+    try:
+        print("============================================")
+        print("\t" * 2 + "CAST128 encryption/decryption")
+        print("--------------------------------------------")
+        plaintext = "hello world"
+        key = CAST128SessionKey(b"12345678")
+        ciphertext = CAST128SymmetricEncryptionStrategy().encrypt(key, plaintext)
+        print(ciphertext)
+        print(CAST128SymmetricEncryptionStrategy().decrypt(key, ciphertext))
+    except (TypeError, ValueError) as e:
+        print("CAST128 test failed.")
+
+    print("============================================")
+
+
+def test_tripledes():
+    try:
+        print("============================================")
+        print("\t" * 2 + "TripleDES encryption/decryption")
+        print("--------------------------------------------")
+        data = 'TripleDES check sentence.'
+        session_key = TripleDESSessionKey(get_random_bytes(24))
+        encrypted_data = TripleDESSymmetricEncryptionStrategy().encrypt(session_key, data)
+        print(encrypted_data)
+        decrypted_data = TripleDESSymmetricEncryptionStrategy().decrypt(session_key, encrypted_data)
+        print(decrypted_data)
+    except (TypeError, ValueError) as e:
+        print("TripleDES test failed.")
+    print("============================================")
 
 
 if __name__ == "__main__":
-    testTripleDes()
-    testCast128()
+    test_tripledes()
+    test_cast128()
 
