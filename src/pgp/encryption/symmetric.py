@@ -79,9 +79,9 @@ def test_cast128():
         print("--------------------------------------------")
         plaintext = "hello world"
         key = CAST128SessionKey(b"12345678")
-        ciphertext = CAST128SymmetricEncryptionStrategy().encrypt(key, plaintext)
+        ciphertext = SymmetricEncryptor().encrypt(key, plaintext, SymmetricEncryptionAlgorithm.CAST_128)
         print(ciphertext)
-        print(CAST128SymmetricEncryptionStrategy().decrypt(key, ciphertext))
+        print(SymmetricEncryptor().decrypt(key, ciphertext, SymmetricEncryptionAlgorithm.CAST_128))
     except (TypeError, ValueError) as e:
         print("CAST128 test failed.")
 
