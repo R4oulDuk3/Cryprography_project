@@ -35,7 +35,7 @@ class RSASigningAlgorithmStrategy(SigningAlgorithmStrategy):
 
 
 class DSASigningAlgorithmStrategy(SigningAlgorithmStrategy):
-    def sign(self, private_key: DSAPrivateKey, message):
+    def sign(self, private_key: DSAPrivateKey, message: Union[str, bytes]):
         if isinstance(message, str):
             message = message.encode('utf-8')
 
