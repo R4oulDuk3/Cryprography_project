@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
-
+from Crypto.Random import get_random_bytes
 from src.pgp.consts.consts import SessionKeyGeneratorAlgorithm
-from src.pgp.key.key import SessionKey
+from src.pgp.key.key import SessionKey, TripleDESSessionKey
 
 
 class SessionKeyGenerator:
@@ -24,7 +24,7 @@ class SessionKeyGeneratorStrategy(ABC):
 
 class TripleDESSessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
     def generate_session_key(self) -> SessionKey:
-        pass
+        return TripleDESSessionKey(get_random_bytes(24))
 
 
 class AES128SessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):

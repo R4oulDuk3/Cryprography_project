@@ -5,6 +5,8 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 from src.pgp.consts.consts import SymmetricEncryptionAlgorithm, UTF_8
 from Crypto.Cipher import CAST
+
+from src.pgp.key.generate.session import TripleDESSessionKeyGeneratorStrategy
 from src.pgp.key.key import CAST128SessionKey, SessionKey, TripleDESSessionKey
 
 
@@ -92,7 +94,7 @@ def test_tripledes():
         print("\t" * 2 + "TripleDES encryption/decryption")
         print("--------------------------------------------")
         data = 'TripleDES check sentence.'
-        session_key = TripleDESSessionKey(get_random_bytes(24))
+        session_key = TripleDESSessionKeyGeneratorStrategy().generate_session_key()
         encrypted_data = TripleDESSymmetricEncryptionStrategy().encrypt(session_key, data)
         print(encrypted_data)
         decrypted_data = TripleDESSymmetricEncryptionStrategy().decrypt(session_key, encrypted_data)
