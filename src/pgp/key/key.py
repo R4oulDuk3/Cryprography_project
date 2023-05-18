@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from enum import Enum
 import rsa
 from src.pgp.consts.consts import KeyType, AsymmetricEncryptionAlgorithm, SigningAlgorithm, SymmetricEncryptionAlgorithm
+from Crypto.PublicKey import DSA
+from Crypto.Signature import DSS
 
 
 class Key(ABC):
@@ -94,3 +96,28 @@ class RSAPublicKey(PublicKey):
 
     def get_key(self) -> rsa.PublicKey:
         return self._key
+
+
+class DSAPublicKey(PrivateKey):
+    def __init__(self, key: DSA.DsaKey):
+        if not isinstance(key, DSA.DsaKey):
+            raise TypeError("key must be of type DSA.DsaKey")
+        if key.p.bit_length() != 1024 and key.p.bit_length() != 2048:
+            raise ValueError("key size must be 1024 or 2048")
+        super().__init__(key, SigningAlgorithm.DSA)
+
+    def get_key(self) -> DSA.DsaKey:
+        return self._key
+
+
+class DSAPrivateKey(PrivateKey):
+    def __init__(self, key: DSA.DsaKey):
+        if not isinstance(key, DSA.DsaKey):
+            raise TypeError("key must be of type DSA.DsaKey")
+        if key.p.bit_length() != 1024 and key.p.bit_length() != 2048:
+            raise ValueError("key size must be 1024 or 2048")
+        super().__init__(key, SigningAlgorithm.DSA)
+
+    def get_key(self) -> DSA.DsaKey:
+        return self._key
+
