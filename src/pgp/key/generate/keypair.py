@@ -7,10 +7,9 @@
 
 from abc import abstractmethod, ABC
 
-from src.pgp.consts.consts import KeyPairGeneratorType
-from src.pgp.key.key import KeyPair, Key
-
-
+from src.pgp.consts.consts import KeyPairGeneratorType, AsymmetricEncryptionAlgorithm
+from src.pgp.key.key import KeyPair, Key, RSAPublicKey, RSAPrivateKey
+import rsa
 
 
 class KeyPairGenerator:
@@ -43,7 +42,12 @@ class KeyPairGeneratorStrategy(ABC):
 # Note: Ovaj moze da se koristi i za potpisivanje i za enkripciju
 class KeyPairGeneratorStrategyRSA(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
-        pass
+        (public_key, private_key) = rsa.newkeys(key_size)
+        return KeyPair(
+            private_key=RSAPrivateKey(key=private_key),
+            public_key=RSAPublicKey(key=public_key),
+            algorithm=AsymmetricEncryptionAlgorithm.RSA
+        )
 
 
 # Note: Ovaj moze da se koristi za potpisivanje
@@ -56,5 +60,3 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
         pass
-
-

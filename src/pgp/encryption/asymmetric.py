@@ -72,6 +72,6 @@ if __name__ == "__main__":
         print(f"Deciphered message: {deciphered_message}")
         print("============================================")
     except (TypeError, ValueError) as e:
-        print("TripleDES test failed.")
+        print("RSA test failed.")
 
     # ElGamal encryption/decryption
