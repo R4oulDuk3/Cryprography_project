@@ -48,15 +48,13 @@ class DSASigningAlgorithmStrategy(SigningAlgorithmStrategy):
 if __name__ == "__main__":
     # RSA sign test byte
     try:
-        (public_key_rsa_b, private_key_rsa_b) = rsa.newkeys(1024)
-        public_key_rsa_b_obj = RSAPublicKey(public_key_rsa_b)
-        private_key_rsa_b_obj = RSAPrivateKey(private_key_rsa_b)
+        RSA_key_pair = KeyPairGenerator().generate_key_pair(KeyPairGeneratorType.RSA, KeyPairGenerator().get_available_key_sizes()[0])
         message_rsa_b = b'My byte example.'
-        signature_rsa_s = RSASigningAlgorithmStrategy().sign(private_key_rsa_b_obj, message_rsa_b)
-        rsa.verify(message_rsa_b, signature_rsa_s, public_key_rsa_b)
+        signature_rsa_s = Signer().sign(RSA_key_pair.get_private_key(), message_rsa_b, SigningAlgorithm.RSA)
+        rsa.verify(message_rsa_b, signature_rsa_s, RSA_key_pair.get_public_key().get_key())
         print("RSA signature verified.")
     except (rsa.VerificationError, TypeError, ValueError) as e:
-        print("RSA signature failed.")
+        print(f"RSA signature failed. {e}")
 
     # DSA sign test byte
     try:
@@ -67,6 +65,6 @@ if __name__ == "__main__":
         verifier.verify(SHA1.new(message_dsa_s.encode('utf-8')), signature_dsa_s)
         print("DSA signature verified.")
     except (TypeError, ValueError) as e:
-        print(f"DSA signature failed. {e}")
+        print("DSA signature failed.")
 
 

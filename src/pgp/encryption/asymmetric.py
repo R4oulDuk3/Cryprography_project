@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
-from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm
+from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, KeyPairGeneratorType
 from enum import Enum
 from typing import Union
 import rsa
+
+from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import RSAPublicKey, RSAPrivateKey
 
 
@@ -39,14 +41,14 @@ class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
 
 
 class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
-    def encrypt(self, public_key: RSAPublicKey, data: Union[str, bytes]) -> bytes:
+    def encrypt(self, public_key: RSAPublicKey, data: str | bytes) -> bytes:
         if isinstance(data, str):
             data = data.encode('utf-8')
 
         encrypted_data = rsa.encrypt(data, public_key.get_key())
         return encrypted_data
 
-    def decrypt(self, private_key: RSAPrivateKey, data: Union[str, bytes]) -> str:
+    def decrypt(self, private_key: RSAPrivateKey, data: str | bytes) -> str:
         if isinstance(data, str):
             data = data.encode('utf-8')
 
@@ -58,12 +60,10 @@ if __name__ == "__main__":
 
     # RSA encryption/decryption
     try:
-        (public_key, private_key) = rsa.newkeys(1024)
-        public_key_obj = RSAPublicKey(public_key)
-        private_key_obj = RSAPrivateKey(private_key)
+        RSA_key_pair = KeyPairGenerator().generate_key_pair(KeyPairGeneratorType.RSA, KeyPairGenerator().get_available_key_sizes()[0])
         message = 'My RSA message'
-        enciphered_message = AsymmetricEncryptor().encrypt(public_key_obj, message, AsymmetricEncryptionAlgorithm.RSA)
-        deciphered_message = AsymmetricEncryptor().decrypt(private_key_obj, enciphered_message, AsymmetricEncryptionAlgorithm.RSA)
+        enciphered_message = AsymmetricEncryptor().encrypt(RSA_key_pair.get_public_key(), message, AsymmetricEncryptionAlgorithm.RSA)
+        deciphered_message = AsymmetricEncryptor().decrypt(RSA_key_pair.get_private_key(), enciphered_message, AsymmetricEncryptionAlgorithm.RSA)
         print("============================================")
         print("\t" * 2 + "RSA encryption/decryption")
         print("--------------------------------------------")
