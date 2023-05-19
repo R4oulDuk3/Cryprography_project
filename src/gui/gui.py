@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter.font import Font
-from src.pgp.consts.consts import KEY_SIZES, AsymmetricEncryptionAlgorithm, SigningAlgorithm, \
-    SymmetricEncryptionAlgorithm
+from src.pgp.consts.consts import KEY_SIZES, ASYMMETRIC_ENCRYPTION_ALGORITHMS, SIGNING_ALGORITHMS, \
+    SYMMETRIC_ENCRYPTION_ALGORITHMS
 
 
 def gui_start():
@@ -65,7 +65,7 @@ def keyg_tab_gen(notebook):
     # Algorithm
     asym_algo_label = ttk.Label(key_gen_tab, text="Asymmetric algorithm")
     asym_algo_label.grid(row=2, column=0, padx=12, pady=4, sticky=tk.W)
-    asym_algo_combo = ttk.Combobox(key_gen_tab, values=[algorithm.value for algorithm in AsymmetricEncryptionAlgorithm])
+    asym_algo_combo = ttk.Combobox(key_gen_tab, values=[algorithm.value for algorithm in ASYMMETRIC_ENCRYPTION_ALGORITHMS])
     asym_algo_combo.grid(row=2, column=1, padx=12, pady=4)
     asym_algo_combo.current(0)
     asym_algo_combo.bind("<<ComboboxSelected>>", lambda event: update_signature_label(asym_algo_combo))
@@ -138,10 +138,10 @@ def keyg_tab_gen(notebook):
 
 
 def update_signature_label(asym_algo_combo):
-    selected_asym_algo = AsymmetricEncryptionAlgorithm(asym_algo_combo.get())
-    if selected_asym_algo == AsymmetricEncryptionAlgorithm.RSA:
+    selected_asym_algo = ASYMMETRIC_ENCRYPTION_ALGORITHMS(asym_algo_combo.get())
+    if selected_asym_algo == ASYMMETRIC_ENCRYPTION_ALGORITHMS.RSA:
         signature_label.config(text="RSA Signature")
-    elif selected_asym_algo == AsymmetricEncryptionAlgorithm.ELGAMAL:
+    elif selected_asym_algo == ASYMMETRIC_ENCRYPTION_ALGORITHMS.ELGAMAL:
         signature_label.config(text="DSA Signature")
 
 
@@ -177,7 +177,7 @@ def send_msg_tab_gen(notebook):
     # Symmetric Algorithm
     symmetric_algo_label = ttk.Label(send_msg_tab, text="Symmetric Algorithm:")
     symmetric_algo_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
-    symmetric_algo_combo = ttk.Combobox(send_msg_tab, values=[algorithm.value for algorithm in SymmetricEncryptionAlgorithm])
+    symmetric_algo_combo = ttk.Combobox(send_msg_tab, values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS])
     symmetric_algo_combo.grid(row=3, column=1, padx=12, pady=4)
     symmetric_algo_combo.config(state=tk.DISABLED)
 
@@ -198,7 +198,7 @@ def send_msg_tab_gen(notebook):
     # Signature Type
     signature_type_label = ttk.Label(send_msg_tab, text="Signature Type:")
     signature_type_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
-    signature_type_combo = ttk.Combobox(send_msg_tab, values=[algorithm.value for algorithm in SigningAlgorithm])
+    signature_type_combo = ttk.Combobox(send_msg_tab, values=[algorithm.value for algorithm in SIGNING_ALGORITHMS])
     signature_type_combo.grid(row=6, column=1, padx=12, pady=4)
     signature_type_combo.config(state=tk.DISABLED)
 

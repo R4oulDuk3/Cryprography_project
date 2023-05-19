@@ -33,6 +33,10 @@ class Algorithm(Enum):
     CAST_128 = 'CAST128'
 
 
+SIGNING_ALGORITHMS = [Algorithm.RSA, Algorithm.DSA]
+ASYMMETRIC_ENCRYPTION_ALGORITHMS = [Algorithm.RSA, Algorithm.ELGAMAL]
+SYMMETRIC_ENCRYPTION_ALGORITHMS = [Algorithm.TRIPLE_DES, Algorithm.CAST_128]
+
 class KeyType(Enum):
     PUBLIC = 'public'
     PRIVATE = 'private'
@@ -45,4 +49,3 @@ KEY_SIZES = [1024, 2048]
 class KeyUsage(Enum):
     SIGN = 'sign'
     ENCRYPT = 'encrypt'
-
