@@ -6,8 +6,6 @@ from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.key.generate.session import SessionKeyGenerator
 
 from src.pgp.key.manager import KeyManager
-from src.pgp.message.message import PGPMessage
-from src.pgp.signature.hash import SHA1Hasher
 from src.pgp.signature.sign import Signer
 from src.pgp.transfer.sender import Sender
 
@@ -21,7 +19,6 @@ class User:
         self.receiver = Receiver(
             key_manager=self.key_manager,
             message_signer=Signer(),
-            message_hasher=SHA1Hasher(),
             symmetric_encryptor=SymmetricEncryptor(),
             asymmetric_encryptor=AsymmetricEncryptor(),
             compressor=ZIPCompressor(),
@@ -31,7 +28,6 @@ class User:
         self.sender = Sender(
             key_manager=self.key_manager,
             message_signer=Signer(),
-            message_hasher=SHA1Hasher(),
             symmetric_encryptor=SymmetricEncryptor(),
             asymmetric_encryptor=AsymmetricEncryptor(),
             compressor=ZIPCompressor(),

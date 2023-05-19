@@ -56,11 +56,10 @@ class KeyPairGeneratorStrategyRSA(KeyPairGeneratorStrategy):
 # Note: Ovaj moze da se koristi za potpisivanje
 class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
-        private_key = DSAPrivateKey(DSA.generate(key_size))
-        public_key = DSAPublicKey(private_key.get_key().public_key())
+        private_key = DSA.generate(key_size)
         return KeyPair(
-            private_key=private_key,
-            public_key=public_key,
+            private_key=DSAPrivateKey(key=private_key),
+            public_key=DSAPublicKey(key=private_key.publickey()),
             algorithm=SigningAlgorithm.DSA
         )
 

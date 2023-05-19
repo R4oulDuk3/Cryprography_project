@@ -46,12 +46,6 @@ class KeyType(Enum):
 
 KEY_SIZES = [1024, 2048]
 
-
-class KeyPairGeneratorType:
-    RSA = 'RSA'
-    DSA = 'DSA'
-    ElGamal = 'ElGamal'
-
 class KeyUsage(Enum):
     SIGN = 'sign'
     ENCRYPT = 'encrypt'

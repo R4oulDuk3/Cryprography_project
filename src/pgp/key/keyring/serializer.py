@@ -1,12 +1,10 @@
-from enum import Enum
-
 import rsa
 
-from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, SymmetricEncryptionAlgorithm, SigningAlgorithm, \
+from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, SymmetricEncryptionAlgorithm, \
     KeyPairPrivateRingAttributes, UTF_8, PRIVATE_KEY_RING_SALT, PublicKeyPublicRingAttributes
 from src.pgp.encryption.symmetric import SymmetricEncryptor
-from src.pgp.key.key import SessionKey, PrivateKey, PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
-from src.pgp.signature.hash import SHA1Hasher
+from src.pgp.key.key import PrivateKey, PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
+from src.pgp.hash.hash import SHA1Hasher
 
 
 def _private_ring_json_verify_all_atributes_exist(key_json: dict):
