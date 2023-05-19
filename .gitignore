@@ -3,8 +3,5 @@
 /src/*
 !/src/**
 *.pyc
-src/pgp/consts/__pycache__/consts.cpython-311.pyc
-src/pgp/key/generate/__pycache__/session.cpython-311.pyc
-src/pgp/consts/__pycache__/consts.cpython-311.pyc
-src/pgp/key/__pycache__/key.cpython-311.pyc
-src/pgp/key/generate/__pycache__/keypair.cpython-311.pyc
+*/__pycache__/*
+*.pyc

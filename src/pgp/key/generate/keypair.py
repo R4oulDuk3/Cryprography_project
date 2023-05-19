@@ -10,7 +10,7 @@ from abc import abstractmethod, ABC
 import rsa
 from Crypto.PublicKey import DSA
 
-from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, SigningAlgorithm, KEY_SIZES
+from src.pgp.consts.consts import Algorithm, KEY_SIZES
 from src.pgp.key.key import KeyPair, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
 
 
@@ -18,14 +18,13 @@ class KeyPairGenerator:
 
     def __init__(self):
         self._strategies = {
-            AsymmetricEncryptionAlgorithm.RSA: KeyPairGeneratorStrategyRSA(),
-            AsymmetricEncryptionAlgorithm.ELGAMAL: KeyPairGeneratorStrategyElGamal(),
-            SigningAlgorithm.RSA: KeyPairGeneratorStrategyRSA(),
-            SigningAlgorithm.DSA: KeyPairGeneratorStrategyDSA(),
+            Algorithm.RSA: KeyPairGeneratorStrategyRSA(),
+            Algorithm.ELGAMAL: KeyPairGeneratorStrategyElGamal(),
+            Algorithm.DSA: KeyPairGeneratorStrategyDSA(),
         }
         self._key_sizes = KEY_SIZES
 
-    def generate_key_pair(self, algorithm: AsymmetricEncryptionAlgorithm | SigningAlgorithm, key_size: int) -> KeyPair:
+    def generate_key_pair(self, algorithm: Algorithm, key_size: int) -> KeyPair:
         return self._strategies[algorithm].generate_key_pair(key_size)
 
     def get_available_algorithms(self):
@@ -49,7 +48,7 @@ class KeyPairGeneratorStrategyRSA(KeyPairGeneratorStrategy):
         return KeyPair(
             private_key=RSAPrivateKey(key=private_key),
             public_key=RSAPublicKey(key=public_key),
-            algorithm=AsymmetricEncryptionAlgorithm.RSA
+            algorithm=Algorithm.RSA
         )
 
 
@@ -60,7 +59,7 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
         return KeyPair(
             private_key=DSAPrivateKey(key=private_key),
             public_key=DSAPublicKey(key=private_key.publickey()),
-            algorithm=SigningAlgorithm.DSA
+            algorithm=Algorithm.DSA
         )
 
 
@@ -72,11 +71,11 @@ class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
 
 def test_key_gen():
     key_pair_generator = KeyPairGenerator()
-    key_pair = key_pair_generator.generate_key_pair(AsymmetricEncryptionAlgorithm.RSA, 1024)
+    key_pair = key_pair_generator.generate_key_pair(Algorithm.RSA, 1024)
     print(key_pair.get_private_key().get_key())
     print(key_pair.get_public_key().get_key())
 
-    key_pair = key_pair_generator.generate_key_pair(AsymmetricEncryptionAlgorithm.RSA, 2048)
+    key_pair = key_pair_generator.generate_key_pair(Algorithm.RSA, 2048)
     print(key_pair.get_private_key().get_key())
     print(key_pair.get_public_key().get_key())
 
