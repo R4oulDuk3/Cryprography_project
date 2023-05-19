@@ -1,8 +1,8 @@
-from src.pgp.consts.consts import KEY_SIZES, KeyPairGeneratorType
+from src.pgp.consts.consts import Algorithm
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import KeyPair
-from src.pgp.key.keyring.secret import SecretKeyRing
 from src.pgp.key.keyring.public import PublicKeyRing
+from src.pgp.key.keyring.secret import SecretKeyRing
 
 
 class KeyManager:
@@ -25,10 +25,10 @@ class KeyManager:
         тражити унос лозинке под којом ће се чувати приватни кључ...
     """
 
-    def generate_key_pair(self, algorithm: KeyPairGeneratorType, key_size: int, email: str, name: str, password: str):
+    def generate_key_pair(self, algorithm: Algorithm, key_size: int, email: str, password: str):
 
         key_pair: KeyPair = self._key_pair_generator.generate_key_pair(algorithm=algorithm, key_size=key_size)
-        self._private_key_ring.add_key_pair(key_pair=key_pair, password=password)
+        self._private_key_ring.add_key_pair(key_pair=key_pair, password=password, user_email=email)
         self._public_key_ring.add_public_key(key_pair.get_public_key())
         self._public_key_ring.save()
         self._private_key_ring.save()
@@ -38,10 +38,14 @@ class KeyManager:
         треба да буду јасно видљиви на корисничком интерфејсу...
     """
 
-    def get_public_key_by_key_id(self, key_id: bytes):
+    def get_public_key_by_key_id(self, key_id: bytes | str):
+        if isinstance(key_id, bytes):
+            key_id = key_id.hex()
         return self._public_key_ring.get_public_key_by_key_id(key_id=key_id)
 
-    def get_private_key_by_key_id(self, key_id: bytes, password: str):
+    def get_private_key_by_key_id(self, key_id: bytes | str, password: str):
+        if isinstance(key_id, bytes):
+            key_id = key_id.hex()
         return self._private_key_ring.get_key_pair_by_key_id(key_id=key_id, password=password)
 
     def get_public_keyring_dictionary(self):
