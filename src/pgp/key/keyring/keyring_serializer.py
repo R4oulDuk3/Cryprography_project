@@ -1,20 +1,20 @@
 import rsa
 
-from src.pgp.consts.consts import  Algorithm, \
+from src.pgp.consts.consts import Algorithm, \
     KeyPairPrivateRingAttributes, UTF_8, PRIVATE_KEY_RING_SALT, PublicKeyPublicRingAttributes
 from src.pgp.encryption.symmetric import SymmetricEncryptor
-from src.pgp.key.key import PrivateKey, PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
 from src.pgp.hash.hash import SHA1Hasher
+from src.pgp.key.key import PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
 from src.pgp.key.key_serializer import KeySerializer
 
 
-def _private_ring_json_verify_all_atributes_exist(key_json: dict):
+def _private_ring_json_verify_all_attributes_exist(key_json: dict):
     for attribute in KeyPairPrivateRingAttributes:
         if attribute.value not in key_json:
             raise ValueError(f"{attribute} is missing from key_json")
 
 
-class KeyRingSerializer:
+class SecretKeyRingSerializer:
     def __init__(self):
         self._symmetric_encryptor = SymmetricEncryptor()
         self._hasher = SHA1Hasher()
@@ -37,8 +37,7 @@ class KeyRingSerializer:
         )
 
     def key_pair_json_deserialize(self, key_json: dict, password: str) -> KeyPair:
-
-        _private_ring_json_verify_all_atributes_exist(key_json=key_json)
+        _private_ring_json_verify_all_attributes_exist(key_json=key_json)
         private_key: bytes = self._decrypt_private_key(key_json=key_json, password=password)
 
         # if key_json[KeyPairPrivateRingAttributes.ALGORITHM.value] == AsymmetricEncryptionAlgorithm.RSA.value:
@@ -52,14 +51,6 @@ class KeyRingSerializer:
                 algorithm=Algorithm[key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
             ),
             algorithm=Algorithm[key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
-        )
-
-    def public_key_json_deserialize(self, public_key_json: dict) -> PublicKey:
-        if PublicKeyPublicRingAttributes.ALGORITHM.value not in public_key_json:
-            raise ValueError("Algorithm is missing from key_json")
-        return self._key_serializer.bytes_to_public_key(
-            key_bytes=bytes.fromhex(public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value]),
-            algorithm=Algorithm[public_key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
         )
 
     def key_pair_json_serialize(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
@@ -84,17 +75,34 @@ class KeyRingSerializer:
         }
         return key_json
 
-    def public_key_json_serialize(self, public_key: PublicKey) -> dict:
+
+class PublicKeyRingSerializer:
+    def __init__(self):
+        self._symmetric_encryptor = SymmetricEncryptor()
+        self._hasher = SHA1Hasher()
+        self._key_serializer = KeySerializer()
+
+    def public_key_json_deserialize(self, public_key_json: dict) -> PublicKey:
+        if PublicKeyPublicRingAttributes.ALGORITHM.value not in public_key_json:
+            raise ValueError("Algorithm is missing from key_json")
+        return self._key_serializer.bytes_to_public_key(
+            key_bytes=bytes.fromhex(public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value]),
+            algorithm=Algorithm[public_key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
+        )
+
+    def public_key_json_serialize(self, public_key: PublicKey, user_email, user_name) -> dict:
         public_key_bytes: bytes = self._key_serializer.public_key_to_bytes(key=public_key)
         return {
             PublicKeyPublicRingAttributes.PUBLIC_KEY.value: public_key_bytes.hex(),
-            PublicKeyPublicRingAttributes.ALGORITHM.value: Algorithm.RSA.value
+            PublicKeyPublicRingAttributes.ALGORITHM.value: Algorithm.RSA.value,
+            PublicKeyPublicRingAttributes.USER_NAME.value: user_name,
+            PublicKeyPublicRingAttributes.USER_EMAIL.value: user_email
         }
 
 
 def test_key_serializer():
     (public_key, private_key) = rsa.newkeys(1024)
-    key_serializer = KeyRingSerializer()
+    secret_key_ring_serializer = SecretKeyRingSerializer()
     print("Public key: " + str(public_key))
     print("Private key: " + str(private_key))
     key_pair = KeyPair(
@@ -102,7 +110,7 @@ def test_key_serializer():
         private_key=RSAPrivateKey(private_key),
         algorithm=Algorithm.RSA
     )
-    key_pair_json = key_serializer.key_pair_json_serialize(
+    key_pair_json = secret_key_ring_serializer.key_pair_json_serialize(
         key_pair=key_pair,
         password="password",
         user_name="test",
@@ -110,9 +118,17 @@ def test_key_serializer():
     )
     print(key_pair_json)
 
-    key_pair = key_serializer.key_pair_json_deserialize(key_json=key_pair_json, password="password")
+    key_pair = secret_key_ring_serializer.key_pair_json_deserialize(key_json=key_pair_json, password="password")
     print("Public key: " + str(key_pair.get_public_key().get_key()))
     print("Private key: " + str(key_pair.get_private_key().get_key()))
+
+    public_key_ring_serializer = PublicKeyRingSerializer()
+    public_key_json = public_key_ring_serializer.public_key_json_serialize(public_key=key_pair.get_public_key(), user_email="test", user_name="test")
+    print(public_key_json)
+    public_key = public_key_ring_serializer.public_key_json_deserialize(public_key_json=public_key_json)
+    print("Public key: " + str(public_key.get_key()))
+    print("Public key: " + str(key_pair.get_public_key().get_key()))
+    print("Public key: " + str(public_key.get_key() == key_pair.get_public_key().get_key()))
 
 
 if __name__ == "__main__":

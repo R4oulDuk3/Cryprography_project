@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Union
-from src.pgp.consts.consts import SigningAlgorithm, UTF_8, AsymmetricEncryptionAlgorithm
+from src.pgp.consts.consts import Algorithm, UTF_8
 import rsa
 from Crypto.PublicKey import DSA
 from Crypto.Signature import DSS
@@ -13,14 +13,14 @@ from src.pgp.key.key import RSAPrivateKey, RSAPublicKey, DSAPrivateKey, DSAPubli
 class Signer:
     def __init__(self):
         self._strategies = {
-            SigningAlgorithm.RSA: RSASigningAlgorithmStrategy(),
-            SigningAlgorithm.DSA: DSASigningAlgorithmStrategy()
+            Algorithm.RSA: RSASigningAlgorithmStrategy(),
+            Algorithm.DSA: DSASigningAlgorithmStrategy()
         }
 
-    def sign(self, private_key: PrivateKey, message: str | bytes, algorithm: SigningAlgorithm) -> bytes:
+    def sign(self, private_key: PrivateKey, message: str | bytes, algorithm: Algorithm) -> bytes:
         return self._strategies[algorithm].sign(private_key, message)
 
-    def verify(self, public_key: PublicKey, message: str | bytes, signature: str | bytes, algorithm: SigningAlgorithm) -> bool:
+    def verify(self, public_key: PublicKey, message: str | bytes, signature: str | bytes, algorithm: Algorithm) -> bool:
         return self._strategies[algorithm].verify(public_key, message, signature)
 
 
@@ -78,11 +78,11 @@ class DSASigningAlgorithmStrategy(SigningAlgorithmStrategy):
 if __name__ == "__main__":
     # RSA sign test byte
     try:
-        RSA_key_pair = KeyPairGenerator().generate_key_pair(AsymmetricEncryptionAlgorithm.RSA,
+        RSA_key_pair = KeyPairGenerator().generate_key_pair(Algorithm.RSA,
                                                             KeyPairGenerator().get_available_key_sizes()[0])
         message_rsa_b = b'My byte example.'
-        signature_rsa_s = Signer().sign(RSA_key_pair.get_private_key(), message_rsa_b, SigningAlgorithm.RSA)
-        result = Signer().verify(RSA_key_pair.get_public_key(), message_rsa_b, signature_rsa_s, SigningAlgorithm.RSA)
+        signature_rsa_s = Signer().sign(RSA_key_pair.get_private_key(), message_rsa_b, Algorithm.RSA)
+        result = Signer().verify(RSA_key_pair.get_public_key(), message_rsa_b, signature_rsa_s, Algorithm.RSA)
         if result:
             print("RSA signature verified.")
         else:
@@ -92,11 +92,11 @@ if __name__ == "__main__":
 
     # DSA sign test byte
     try:
-        DSA_key_pair = KeyPairGenerator().generate_key_pair(SigningAlgorithm.DSA,
+        DSA_key_pair = KeyPairGenerator().generate_key_pair(Algorithm.DSA,
                                                             KeyPairGenerator().get_available_key_sizes()[0])
         message_dsa_s = 'My string example.'
-        signature_dsa_s = Signer().sign(DSA_key_pair.get_private_key(), message_dsa_s, SigningAlgorithm.DSA)
-        result = Signer().verify(DSA_key_pair.get_public_key(), message_dsa_s, signature_dsa_s, SigningAlgorithm.DSA)
+        signature_dsa_s = Signer().sign(DSA_key_pair.get_private_key(), message_dsa_s, Algorithm.DSA)
+        result = Signer().verify(DSA_key_pair.get_public_key(), message_dsa_s, signature_dsa_s, Algorithm.DSA)
         if result:
             print("DSA signature verified.")
         else:

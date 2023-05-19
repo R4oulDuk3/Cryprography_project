@@ -7,18 +7,17 @@
 import json
 import os
 
-from src.pgp.consts.consts import DATA_DIR, SECRET_KEY_RING_FILE, UTF_8, Algorithm
+from src.pgp.consts.consts import DATA_DIR, SECRET_KEY_RING_FILE, UTF_8, Algorithm, KeyPairPrivateRingAttributes
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import KeyPair
-from src.pgp.key.keyring.key_id import make_key_id
-from src.pgp.key.keyring.keyring_serializer import KeyRingSerializer
+from src.pgp.key.keyring.keyring_serializer import SecretKeyRingSerializer
 
 
 class SecretKeyRing:
 
     def __init__(self, user_name: str):
         self._user_name = user_name
-        self._serializer = KeyRingSerializer()
+        self._serializer = SecretKeyRingSerializer()
         self._serialized_key_pair_dictionary = self._load_key_pair_dictionary_json()
 
     def form_key_pair_dictionary_path(self):
@@ -34,17 +33,19 @@ class SecretKeyRing:
             return {}
 
     def add_key_pair(self, key_pair: KeyPair, password: str, user_email: str):
+
         key_pair_json = self._serializer.key_pair_json_serialize(key_pair=key_pair, password=password,
                                                                  user_name=self._user_name,
                                                                  user_email=user_email)
-        self._serialized_key_pair_dictionary[make_key_id(public_key=key_pair.get_public_key())] = key_pair_json
+        self._serialized_key_pair_dictionary[user_email] = key_pair_json
 
-    def delete_private_key(self, key_id: str):
-        self._serialized_key_pair_dictionary.pop(key_id)
+    def delete_key_pair_by_user_email(self, user_email: str, password: str):
+        self.get_key_pair_by_user_email(user_mail=user_email, password=password)  # check if password is correct
+        self._serialized_key_pair_dictionary.pop(user_email)
 
-    def get_key_pair_by_key_id(self, key_id: str, password: str) -> KeyPair:
+    def get_key_pair_by_user_email(self, user_mail: str, password: str) -> KeyPair:
 
-        key_pair_json = self._serialized_key_pair_dictionary[key_id]
+        key_pair_json = self._serialized_key_pair_dictionary[user_mail]
         key_pair: KeyPair = self._serializer.key_pair_json_deserialize(key_json=key_pair_json, password=password)
         return key_pair
 
@@ -74,10 +75,10 @@ def test_secret_key_ring():
     secret_key_ring.save()
     key_pair_dictionary = secret_key_ring.get_key_pair_dictionary()
     print(key_pair_dictionary)
-    key_pair = secret_key_ring.get_key_pair_by_key_id(
-        key_id=make_key_id(public_key=key_pair.get_public_key()), password="password")
+    key_pair = secret_key_ring.get_key_pair_by_user_email(
+        user_mail="email", password="password")
     print(key_pair.get_public_key().get_key().save_pkcs1())
-    secret_key_ring.delete_private_key(key_id=make_key_id(public_key=key_pair.get_public_key()))
+    secret_key_ring.delete_key_pair_by_user_email(user_mail="email")
     secret_key_ring.save()
     key_pair_dictionary = secret_key_ring.get_key_pair_dictionary()
     print(key_pair_dictionary)

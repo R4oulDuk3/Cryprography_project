@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from src.pgp.consts.consts import Algorithm
+from src.pgp.consts.consts import Algorithm, UTF_8
 from enum import Enum
 from typing import Union
 import rsa
 
 from src.pgp.key.generate.keypair import KeyPairGenerator
-from src.pgp.key.key import RSAPublicKey, RSAPrivateKey
+from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, PublicKey, PrivateKey
 from src.pgp.util.util import validate_if_algorithm_asymmetric_encryption
 
 
@@ -16,47 +16,47 @@ class AsymmetricEncryptor:
             Algorithm.ELGAMAL: ElGamalAsymmetricEncryptionStrategy(),
         }
 
-    def encrypt(self, public_key, data, algorithm: Algorithm):
+    def encrypt(self, public_key: PublicKey, plaintext: str | bytes, algorithm: Algorithm) -> bytes:
         validate_if_algorithm_asymmetric_encryption(algorithm)
-        return self._algorithms[algorithm].encrypt(public_key, data)
+        return self._algorithms[algorithm].encrypt(public_key, plaintext)
 
-    def decrypt(self, private_key, data, algorithm: Algorithm):
+    def decrypt(self, private_key: PrivateKey, ciphertext: str | bytes, algorithm: Algorithm) -> bytes:
         validate_if_algorithm_asymmetric_encryption(algorithm)
-        return self._algorithms[algorithm].decrypt(private_key, data)
+        return self._algorithms[algorithm].decrypt(private_key, ciphertext)
 
 
 class AbstractAsymmetricEncryptionStrategy(ABC):
     @abstractmethod
-    def encrypt(self, public_key, data):
+    def encrypt(self, public_key: PublicKey, plaintext: str | bytes) -> bytes:
         pass
 
     @abstractmethod
-    def decrypt(self, private_key, data):
+    def decrypt(self, private_key: PrivateKey, ciphertext: str | bytes) -> bytes:
         pass
 
 
 class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
-    def encrypt(self, public_key, data):
+    def encrypt(self, public_key: PublicKey, plaintext: str | bytes) -> bytes:
         pass
 
-    def decrypt(self, private_key, data):
+    def decrypt(self, private_key: PrivateKey, ciphertext: str | bytes) -> bytes:
         pass
 
 
 class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
-    def encrypt(self, public_key: RSAPublicKey, data: str | bytes) -> bytes:
-        if isinstance(data, str):
-            data = data.encode('utf-8')
+    def encrypt(self, public_key: RSAPublicKey, plaintext: str | bytes) -> bytes:
+        if isinstance(plaintext, str):
+            plaintext = plaintext.encode(UTF_8)
 
-        encrypted_data = rsa.encrypt(data, public_key.get_key())
+        encrypted_data = rsa.encrypt(plaintext, public_key.get_key())
         return encrypted_data
 
-    def decrypt(self, private_key: RSAPrivateKey, data: str | bytes) -> str:
-        if isinstance(data, str):
-            data = data.encode('utf-8')
+    def decrypt(self, private_key: RSAPrivateKey, ciphertext: str | bytes) -> bytes:
+        if isinstance(ciphertext, str):
+            ciphertext = ciphertext.encode(UTF_8)
 
-        decrypted_data = rsa.decrypt(data, private_key.get_key())
-        return decrypted_data.decode('utf-8')
+        decrypted_data = rsa.decrypt(ciphertext, private_key.get_key())
+        return decrypted_data
 
 
 if __name__ == "__main__":

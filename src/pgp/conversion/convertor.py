@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import base64
 
+
 class Convertor(ABC):
     @abstractmethod
     def encode(self, data):

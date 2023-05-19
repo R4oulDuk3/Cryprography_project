@@ -21,6 +21,8 @@ class KeyPairPrivateRingAttributes(Enum):
 class PublicKeyPublicRingAttributes(Enum):
     ALGORITHM = 'algorithm'
     PUBLIC_KEY = 'public_key'
+    USER_EMAIL = 'email'
+    USER_NAME = 'name'
 
 
 class Algorithm(Enum):

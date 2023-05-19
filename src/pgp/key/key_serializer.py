@@ -2,7 +2,8 @@ import rsa
 
 from src.pgp.consts.consts import UTF_8, Algorithm
 from src.pgp.key.generate.keypair import KeyPairGenerator
-from src.pgp.key.key import KeyPair, RSAPublicKey, PrivateKey, RSAPrivateKey, PublicKey, SessionKey
+from src.pgp.key.key import KeyPair, RSAPublicKey, PrivateKey, RSAPrivateKey, PublicKey, SessionKey, CAST128SessionKey, \
+    TripleDESSessionKey
 
 
 def conclude_pem_algorithm(key_pem: str) -> Algorithm:
@@ -81,10 +82,10 @@ class KeySerializer:
             raise NotImplementedError()
 
     def bytes_to_session_key(self, key_bytes: bytes, algorithm: Algorithm) -> SessionKey:
-        if algorithm == Algorithm.CAST_128.value:
-            return SessionKey(algorithm=Algorithm.CAST_128, key=key_bytes)
-        elif algorithm == Algorithm.TRIPLE_DES.value:
-            return SessionKey(algorithm=Algorithm.TRIPLE_DES, key=key_bytes)
+        if algorithm == Algorithm.CAST_128:
+            return CAST128SessionKey(key=key_bytes)
+        elif algorithm == Algorithm.TRIPLE_DES:
+            return TripleDESSessionKey(key=key_bytes)
         else:
             raise NotImplementedError()
 
