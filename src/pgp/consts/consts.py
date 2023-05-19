@@ -43,3 +43,4 @@ KEY_SIZES = [1024, 2048]
 class KeyUsage(Enum):
     SIGN = 'sign'
     ENCRYPT = 'encrypt'
+
