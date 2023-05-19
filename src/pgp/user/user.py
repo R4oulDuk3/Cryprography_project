@@ -12,11 +12,9 @@ from src.pgp.transfer.sender import Sender
 
 
 class User:
-    def __init__(self, user_id: str, name: str, email: str):
-        self.name = name
-        self.email = email
-        self.id = user_id
-        self.key_manager = KeyManager(user_id)
+    def __init__(self, user_name: str):
+        self.user_name = user_name
+        self.key_manager = KeyManager(user_name)
         self.receiver = Receiver(
             key_manager=self.key_manager,
             message_signer=Signer(),
@@ -37,11 +35,3 @@ class User:
             session_key_generator=SessionKeyGenerator(),
             key_serializer=KeySerializer(),
         )
-
-    @staticmethod
-    def login(email):
-        pass
-
-    @staticmethod
-    def register(name, email):
-        pass
