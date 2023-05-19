@@ -8,7 +8,6 @@ from src.pgp.key.generate.session import SessionKeyGenerator
 
 from src.pgp.key.manager import KeyManager
 from src.pgp.message.message import PGPMessage
-from src.pgp.signature.hash import Hasher
 from src.pgp.signature.sign import Signer
 
 
@@ -16,7 +15,6 @@ class Sender:
     def __init__(self,
                  key_manager: KeyManager,
                  message_signer: Signer,
-                 message_hasher: Hasher,
                  symmetric_encryptor: SymmetricEncryptor,
                  asymmetric_encryptor: AsymmetricEncryptor,
                  compressor: Compressor,
@@ -24,7 +22,6 @@ class Sender:
                  session_key_generator: SessionKeyGenerator):
         self.key_manager = key_manager
         self.message_signer = message_signer
-        self.message_hasher = message_hasher
         self.symmetric_encryptor = symmetric_encryptor
         self.asymmetric_encryptor = asymmetric_encryptor
         self.compressor = compressor

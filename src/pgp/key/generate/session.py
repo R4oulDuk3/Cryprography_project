@@ -28,5 +28,5 @@ class TripleDESSessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
 
 
 class CAST128SessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
-    def generate_session_key(self) -> SessionKey:
+    def generate_session_key(self) -> TripleDESSessionKey:
         return TripleDESSessionKey(get_random_bytes(16))
