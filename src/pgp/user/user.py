@@ -1,6 +1,7 @@
+from src.pgp.key.key_serializer import KeySerializer
 from src.pgp.transfer.receiver import Receiver
 from src.pgp.compression.compressor import ZIPCompressor
-from src.pgp.conversion.converter import Radix64Convertor
+from src.pgp.conversion.convertor import Radix64Convertor
 from src.pgp.encryption.asymmetric import AsymmetricEncryptor
 from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.key.generate.session import SessionKeyGenerator
@@ -24,6 +25,7 @@ class User:
             compressor=ZIPCompressor(),
             convertor=Radix64Convertor(),
             session_key_generator=SessionKeyGenerator(),
+            key_serializer=KeySerializer(),
         )
         self.sender = Sender(
             key_manager=self.key_manager,
@@ -33,6 +35,7 @@ class User:
             compressor=ZIPCompressor(),
             convertor=Radix64Convertor(),
             session_key_generator=SessionKeyGenerator(),
+            key_serializer=KeySerializer(),
         )
 
     @staticmethod
