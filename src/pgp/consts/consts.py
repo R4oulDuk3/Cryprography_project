@@ -23,19 +23,12 @@ class PublicKeyPublicRingAttributes(Enum):
     PUBLIC_KEY = 'public_key'
 
 
-class AsymmetricEncryptionAlgorithm(Enum):
-    RSA = 'RSA'
-    ELGAMAL = 'ElGamal'
-
-
-class SymmetricEncryptionAlgorithm(Enum):
-    TRIPLE_DES = '3DES'
-    CAST_128 = 'CAST128'
-
-
-class SigningAlgorithm(Enum):
+class Algorithm(Enum):
     RSA = 'RSA'
     DSA = 'DSA'
+    ELGAMAL = 'ElGamal'
+    TRIPLE_DES = '3DES'
+    CAST_128 = 'CAST128'
 
 
 class KeyType(Enum):
@@ -45,6 +38,7 @@ class KeyType(Enum):
 
 
 KEY_SIZES = [1024, 2048]
+
 
 class KeyUsage(Enum):
     SIGN = 'sign'

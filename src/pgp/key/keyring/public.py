@@ -6,11 +6,11 @@
 """
 import json
 
-from src.pgp.consts.consts import DATA_DIR, PUBLIC_KEY_RING_FILE, KeyPairGeneratorType
+from src.pgp.consts.consts import DATA_DIR, PUBLIC_KEY_RING_FILE, Algorithm
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import Key, PublicKey, KeyPair
 from src.pgp.key.keyring.key_id import make_key_id
-from src.pgp.key.keyring.serializer import KeySerializer
+from src.pgp.key.keyring.keyring_serializer import KeyRingSerializer
 import os
 
 
@@ -21,7 +21,7 @@ class PublicKeyRing:
 
     def __init__(self, user_name: str):
         self._user_name = user_name
-        self._serializer = KeySerializer()
+        self._serializer = KeyRingSerializer()
         self._serialized_key_dictionary = self._load_key_dictionary_json()
 
     def form_key_dictionary_path(self):
@@ -74,7 +74,7 @@ def test_public_key_ring():
     public_key_ring = PublicKeyRing(user_name="user")
     public_key_ring.save()
     key_pair_generator = KeyPairGenerator()
-    key_pair: KeyPair = key_pair_generator.generate_key_pair(KeyPairGeneratorType.RSA, 1024)
+    key_pair: KeyPair = key_pair_generator.generate_key_pair(Algorithm.RSA, 1024)
     print(key_pair.get_public_key().get_key())
     public_key_ring.add_public_key(public_key=key_pair.get_public_key())
     print(public_key_ring.get_key_pair_dictionary())

@@ -7,18 +7,18 @@
 import json
 import os
 
-from src.pgp.consts.consts import DATA_DIR, SECRET_KEY_RING_FILE, UTF_8, KeyPairGeneratorType
+from src.pgp.consts.consts import DATA_DIR, SECRET_KEY_RING_FILE, UTF_8, Algorithm
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import KeyPair
 from src.pgp.key.keyring.key_id import make_key_id
-from src.pgp.key.keyring.serializer import KeySerializer
+from src.pgp.key.keyring.keyring_serializer import KeyRingSerializer
 
 
 class SecretKeyRing:
 
     def __init__(self, user_name: str):
         self._user_name = user_name
-        self._serializer = KeySerializer()
+        self._serializer = KeyRingSerializer()
         self._serialized_key_pair_dictionary = self._load_key_pair_dictionary_json()
 
     def form_key_pair_dictionary_path(self):
@@ -69,7 +69,7 @@ class SecretKeyRing:
 def test_secret_key_ring():
     secret_key_ring = SecretKeyRing(user_name="user1")
     key_pair_generator = KeyPairGenerator()
-    key_pair: KeyPair = key_pair_generator.generate_key_pair(KeyPairGeneratorType.RSA, 1024)
+    key_pair: KeyPair = key_pair_generator.generate_key_pair(Algorithm.RSA, 1024)
     secret_key_ring.add_key_pair(key_pair=key_pair, password="password", user_email="email")
     secret_key_ring.save()
     key_pair_dictionary = secret_key_ring.get_key_pair_dictionary()

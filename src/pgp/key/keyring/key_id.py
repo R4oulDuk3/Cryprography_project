@@ -1,11 +1,11 @@
 import rsa
 
-from src.pgp.consts.consts import AsymmetricEncryptionAlgorithm, KEY_ID_LENGTH, UTF_8
+from src.pgp.consts.consts import Algorithm, KEY_ID_LENGTH, UTF_8
 from src.pgp.key.key import RSAPublicKey, PublicKey
 
 
 def make_key_id(public_key: PublicKey) -> str:
-    if public_key.get_algorithm() == AsymmetricEncryptionAlgorithm.RSA:
+    if public_key.get_algorithm() == Algorithm.RSA:
         rsa_public_key: rsa.PublicKey = public_key.get_key()
         key_id = rsa_public_key.save_pkcs1()[-KEY_ID_LENGTH:]
         return key_id.hex()
