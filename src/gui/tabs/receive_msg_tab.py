@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 
 
-def receive_msg_tab_gen(notebook, username):
+def receive_msg_tab_gen(notebook, user):
     receive_msg_tab = ttk.Frame(notebook)
     notebook.add(receive_msg_tab, text="Receive message")
 

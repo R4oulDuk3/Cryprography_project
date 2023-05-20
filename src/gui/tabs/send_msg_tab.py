@@ -3,7 +3,7 @@ from tkinter import ttk
 from src.pgp.consts.consts import SYMMETRIC_ENCRYPTION_ALGORITHMS, SIGNING_ALGORITHMS
 
 
-def send_msg_tab_gen(notebook, username):
+def send_msg_tab_gen(notebook, user):
     send_msg_tab = ttk.Frame(notebook)
     notebook.add(send_msg_tab, text="Send Message")
 
