@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from src.gui.tabs.initial_login_tab import gui_start
 from src.pgp.consts.consts import KEY_SIZES, ASYMMETRIC_ENCRYPTION_ALGORITHMS
 
 
-def keyg_tab_gen(notebook):
+def keyg_tab_gen(notebook, username, logout_callback):
     key_gen_tab = ttk.Frame(notebook)
     notebook.add(key_gen_tab, text="Key Generation")
 
@@ -90,6 +91,15 @@ def keyg_tab_gen(notebook):
     # Import Keys button
     import_keys_button = ttk.Button(key_gen_tab, text="Import")
     import_keys_button.grid(row=12, column=0, columnspan=2, padx=10, pady=10)
+
+    # Logout
+    logout_separator = ttk.Separator(key_gen_tab, orient="horizontal")
+    logout_separator.grid(row=13, column=0, columnspan=12, padx=0, pady=10, sticky="we")
+    username_label = ttk.Label(key_gen_tab, text=f"Current user: {username}")
+    username_label.grid(row=14, column=0, padx=12, pady=4, sticky=tk.W)
+    logout_btn = ttk.Button(key_gen_tab, text="Logout", command=logout_callback)
+    logout_btn.grid(row=14, column=1, columnspan=1, padx=10, pady=10)
+
 
 def update_signature_label(asym_algo_combo, signature_label):
     selected_asym_algo = asym_algo_combo.get()

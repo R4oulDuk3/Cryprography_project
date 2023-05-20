@@ -13,10 +13,15 @@ def show_main_window(username):
     window.geometry("900x800")
 
     tabs = ttk.Notebook(window)
-    keyg_tab_gen(tabs)
-    keyoverview_tab_gen(tabs)
-    send_msg_tab_gen(tabs)
-    receive_msg_tab_gen(tabs)
+
+    def logout_callback():
+        window.destroy()
+        gui_start(show_main_window)
+
+    keyg_tab_gen(tabs, username, logout_callback)
+    keyoverview_tab_gen(tabs, username)
+    send_msg_tab_gen(tabs, username)
+    receive_msg_tab_gen(tabs, username)
 
     tabs.pack()
     window.mainloop()
