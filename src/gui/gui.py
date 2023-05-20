@@ -7,9 +7,9 @@ from tabs.receive_msg_tab import receive_msg_tab_gen
 from tabs.initial_login_tab import gui_start
 
 
-def show_main_window():
+def show_main_window(username):
     window = tk.Tk()
-    window.title("PGP - Zastita podataka")
+    window.title(f"PGP - Zastita podataka")
     window.geometry("900x800")
 
     tabs = ttk.Notebook(window)

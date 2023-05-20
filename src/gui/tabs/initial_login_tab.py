@@ -3,14 +3,10 @@ from tkinter import ttk
 from tkinter.font import Font
 
 
-def gui_start(callback):
+def gui_start(show_main_window):
     window = tk.Tk()
     window.title("PGP - Log in")
     window.geometry("450x400")
-
-    def login_window_btn():
-        window.destroy()
-        callback()
 
     header_font = Font(size=20, weight="bold")
     header_label = ttk.Label(window, text="Pretty Good Privacy", font=header_font)
@@ -24,6 +20,11 @@ def gui_start(callback):
 
     username_entry = ttk.Entry(login_window)
     username_entry.pack(padx=10, pady=10)
+
+    def login_window_btn():
+        username = username_entry.get()
+        window.destroy()
+        show_main_window(username)
 
     continue_button = ttk.Button(login_window, text="Continue", command=login_window_btn)
     continue_button.pack(padx=10, pady=10)
