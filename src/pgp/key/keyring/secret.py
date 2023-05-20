@@ -40,7 +40,7 @@ class SecretKeyRing:
         self._serialized_key_pair_dictionary[user_email] = key_pair_json
 
     def delete_key_pair_by_user_email(self, user_email: str, password: str):
-        self.get_key_pair_by_user_email(user_mail=user_email, password=password)  # check if password is correct
+        self.get_key_pair_by_user_email(user_mail=user_email, password=password)  # checks if password is correct
         self._serialized_key_pair_dictionary.pop(user_email)
 
     def get_key_pair_by_user_email(self, user_mail: str, password: str) -> KeyPair:
@@ -56,7 +56,7 @@ class SecretKeyRing:
     def save(self):
         path = self.form_key_pair_dictionary_path()
         with open(path, 'w') as file:
-            json.dump(self._serialized_key_pair_dictionary, file)
+            json.dump(self._serialized_key_pair_dictionary, file, indent=4)
 
     """
         ...Сви генерисани и увезени кључеви
@@ -78,7 +78,7 @@ def test_secret_key_ring():
     key_pair = secret_key_ring.get_key_pair_by_user_email(
         user_mail="email", password="password")
     print(key_pair.get_public_key().get_key().save_pkcs1())
-    secret_key_ring.delete_key_pair_by_user_email(user_mail="email")
+    secret_key_ring.delete_key_pair_by_user_email(user_email="email", password="password")
     secret_key_ring.save()
     key_pair_dictionary = secret_key_ring.get_key_pair_dictionary()
     print(key_pair_dictionary)
