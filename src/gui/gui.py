@@ -8,6 +8,7 @@ from src.gui.tabs.key_overiew.key_overview_tab import key_overview_tab_gen
 from tabs.send_msg_tab import send_msg_tab_gen
 from tabs.receive_msg_tab import receive_msg_tab_gen
 from tabs.initial_login_tab import gui_start
+from src.pgp.user.user import User
 
 
 def show_main_window(username):
@@ -17,10 +18,17 @@ def show_main_window(username):
     user: User = User(username)
 
     tabs = ttk.Notebook(window)
-    keyg_tab_gen(tabs)
+
+    user = User(username)
+
+    def logout_callback():
+        window.destroy()
+        gui_start(show_main_window)
+
+    keyg_tab_gen(tabs, user, logout_callback)
     key_overview_tab_gen(tabs, user)
-    send_msg_tab_gen(tabs)
-    receive_msg_tab_gen(tabs)
+    send_msg_tab_gen(tabs, user)
+    receive_msg_tab_gen(tabs, user)
 
     tabs.pack()
     window.mainloop()
