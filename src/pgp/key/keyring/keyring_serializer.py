@@ -56,7 +56,7 @@ class SecretKeyRingSerializer:
     def key_pair_json_serialize(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
         hashed_password_with_salt: bytes = self._hasher.hash(message=f"{password}:{PRIVATE_KEY_RING_SALT}")
         hashed_password: bytes = self._hasher.hash(message=password)
-        print("Len hashed password: " + str(len(hashed_password)))
+        # print("Len hashed password: " + str(len(hashed_password)))
 
         private_key_bytes: bytes = self._key_serializer.private_key_to_bytes(key=key_pair.get_private_key())
         public_key_bytes: bytes = self._key_serializer.public_key_to_bytes(key=key_pair.get_public_key())
