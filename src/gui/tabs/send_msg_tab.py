@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import filedialog
 from tkinter import ttk
 
-
 from src.pgp.consts.consts import SYMMETRIC_ENCRYPTION_ALGORITHMS, SIGNING_ALGORITHMS, Algorithm
 from src.pgp.message.message import PGPMessage
 from src.pgp.user.user import User
@@ -49,12 +48,6 @@ def send_message(user: User,
 
 
 def send_msg_tab_gen(notebook, user: User, logout_callback):
-
-
-
-
-def send_msg_tab_gen(notebook, user: User, logout_callback):
-
     send_msg_tab = ttk.Frame(notebook)
     notebook.add(send_msg_tab, text="Send Message")
 
@@ -87,14 +80,12 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
 
     to_email_entry.grid(row=2, column=1, padx=12, pady=4)
 
-
     # Public Key
     public_key_label = ttk.Label(send_msg_tab, text="Public Key:")
     public_key_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
     public_key_combo = ttk.Combobox(send_msg_tab, values=["Public Key 1", "Public Key 2"])
 
     public_key_combo.grid(row=4, column=1, padx=12, pady=4)
-
 
     # Signature Type
     signature_type_label = ttk.Label(send_msg_tab, text="Signature Type:")
@@ -104,8 +95,6 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     signature_type_combo.config(state=tk.DISABLED)
 
     public_key_combo.grid(row=3, column=1, padx=12, pady=4)
-
-
 
     # Symmetric Algorithm
     symmetric_algo_label = ttk.Label(send_msg_tab, text="Symmetric Algorithm:")
@@ -135,7 +124,6 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     radix64_checkbox = ttk.Checkbutton(send_msg_tab, variable=radix64_var)
     radix64_checkbox.grid(row=5, column=1, padx=12, pady=4)
 
-
     # Destination Folder
     dest_folder_label = ttk.Label(send_msg_tab, text="Destination Folder:")
     dest_folder_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
@@ -147,9 +135,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
 
     send_msg_btn.grid(row=10, column=0, columnspan=2, padx=10, pady=10)
 
-
     send_msg_btn.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
-
 
     # Logout
     logout_separator = ttk.Separator(send_msg_tab, orient="horizontal")
@@ -173,4 +159,3 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     send_msg_btn = ttk.Button(send_msg_tab, text="Send Message")
     send_msg_btn.grid(row=11, column=0, columnspan=2, padx=10, pady=10)
     logout_btn.grid(row=9, column=1, columnspan=1, padx=10, pady=10)
-

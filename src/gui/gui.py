@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from src.pgp.consts.consts import Algorithm
+from src.pgp.consts.consts import Algorithm, AlgorithmType
 from src.pgp.user.user import User
 from tabs.key_gen_tab import keyg_tab_gen
 from src.gui.tabs.key_overiew.key_overview_tab import key_overview_tab_gen
@@ -24,7 +24,7 @@ def show_main_window(username):
 
     keyg_tab_gen(tabs, user, logout_callback)
     key_overview_tab_gen(tabs, user, logout_callback)
-    send_msg_tab_gen(tabs, user, logout_callback)
+    # send_msg_tab_gen(tabs, user, logout_callback)
     receive_msg_tab_gen(tabs, user, logout_callback)
 
     tabs.pack()
@@ -33,19 +33,32 @@ def show_main_window(username):
 
 def init_test_data():
     user = User("gavrilo")
-    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                       email="gavrilo@gmail.com")
-    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                       email="gavrilo2@gmail.com")
-    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                       email="gavrilo3@gmail.com")
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo@gmail.com", algorithm_type=AlgorithmType.SIGNING)
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo2@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo2@gmail.com", algorithm_type=AlgorithmType.SIGNING)
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo3@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                       email="gavrilo3@gmail.com", algorithm_type=AlgorithmType.SIGNING)
+
     user2 = User("stanoje")
-    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                        email="stanoje@gmail.com")
-    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                        email="stanoje2@gmail.com")
-    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=2048, password="1234",
-                                        email="stanoje3@gmail.com")
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje@gmail.com", algorithm_type=AlgorithmType.SIGNING)
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje2@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje2@gmail.com", algorithm_type=AlgorithmType.SIGNING)
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje3@gmail.com", algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
+    user2.key_manager.generate_key_pair(algorithm=Algorithm.RSA, key_size=1024, password="1234",
+                                        email="stanoje3@gmail.com", algorithm_type=AlgorithmType.SIGNING)
 
 
 def main():

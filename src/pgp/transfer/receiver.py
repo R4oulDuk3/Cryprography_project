@@ -67,3 +67,26 @@ class Receiver:
             plaintext = self.convertor.decode(plaintext)
         return plaintext
 
+
+def test_message_receive():
+    key_manager = KeyManager(user_name="user2")
+    message_signer = Signer()
+    symmetric_encryptor = SymmetricEncryptor()
+    asymmetric_encryptor = AsymmetricEncryptor()
+    compressor = ZIPCompressor()
+    convertor = Radix64Convertor()
+    session_key_generator = SessionKeyGenerator()
+    key_serializer = KeySerializer()
+    receiver = Receiver(key_manager=key_manager,
+                        message_signer=message_signer,
+                        symmetric_encryptor=symmetric_encryptor,
+                        asymmetric_encryptor=asymmetric_encryptor,
+                        compressor=compressor,
+                        convertor=convertor,
+                        session_key_generator=session_key_generator,
+                        key_serializer=key_serializer)
+    message = receiver.unpack_message(path_to_message="message.pgp")
+    print(message)
+    plaintext = receiver.decrypt_message(message=message,
+                                         password="password")
+    print(plaintext)

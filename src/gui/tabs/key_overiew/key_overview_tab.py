@@ -1,9 +1,8 @@
-from tkinter import ttk
 import tkinter as tk
+from tkinter import ttk
 
-from src.gui.util.util import show_full_text
-from src.pgp.user.user import User
 from src.pgp.consts.consts import KeyPairPrivateRingAttributes, PublicKeyPublicRingAttributes
+from src.pgp.user.user import User
 
 
 def make_secret_key_ring_table(notebook: ttk.Notebook):
@@ -11,15 +10,18 @@ def make_secret_key_ring_table(notebook: ttk.Notebook):
     notebook.add(secret_key_tab, text="Secret Key Ring")
 
     secret_key_table = ttk.Treeview(secret_key_tab, columns=(
-        "USER_NAME", "USER_EMAIL", "PUBLIC_KEY", "ENCRYPTED_PRIVATE_KEY", "HASHED_PASSWORD_WITH_SALT", "ALGORITHM"),
+        "USER_NAME", "USER_EMAIL", "KEY_ID", "PUBLIC_KEY", "ENCRYPTED_PRIVATE_KEY", "HASHED_PASSWORD_WITH_SALT",
+        "ALGORITHM", "TYPE"),
                                     show="headings")
 
     secret_key_table.heading("USER_NAME", text="User Name")
     secret_key_table.heading("USER_EMAIL", text="User Email")
+    secret_key_table.heading("KEY_ID", text="Key ID")
     secret_key_table.heading("PUBLIC_KEY", text="Public Key (Shortened)")
     secret_key_table.heading("ENCRYPTED_PRIVATE_KEY", text="Encrypted Private Key (Shortened)")
     secret_key_table.heading("HASHED_PASSWORD_WITH_SALT", text="Hashed Password with Salt")
     secret_key_table.heading("ALGORITHM", text="Algorithm")
+    secret_key_table.heading("TYPE", text="Type")
 
     secret_key_table.column("PUBLIC_KEY", width=200)
     secret_key_table.column("ENCRYPTED_PRIVATE_KEY", width=200)
@@ -28,30 +30,39 @@ def make_secret_key_ring_table(notebook: ttk.Notebook):
 
 def reset_and_fill_secret_ring_table(secret_key_table: ttk.Treeview, user: User):
     secret_key_table.delete(*secret_key_table.get_children())
-    for email in user.key_manager.get_private_keyring_dictionary().keys():
-        key_pair_json: dict = user.key_manager.get_private_keyring_dictionary()[email]
-        secret_key_table.insert("", "end",
-                                values=(key_pair_json[KeyPairPrivateRingAttributes.USER_NAME.value],
-                                        key_pair_json[KeyPairPrivateRingAttributes.USER_EMAIL.value],
-                                        key_pair_json[KeyPairPrivateRingAttributes.PUBLIC_KEY.value],
-                                        key_pair_json[KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value],
-                                        key_pair_json[KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value],
-                                        key_pair_json[KeyPairPrivateRingAttributes.ALGORITHM.value]))
+    emails = user.key_manager.get_private_keyring_dictionary().keys()
+    for email in emails:
+        keys_pairs_for_email = user.key_manager.get_private_keyring_dictionary()[email]
+        for key_pair in keys_pairs_for_email:
+            secret_key_table.insert("", "end",
+                                    values=(
+                                        keys_pairs_for_email[key_pair][KeyPairPrivateRingAttributes.USER_NAME.value],
+                                        keys_pairs_for_email[key_pair][KeyPairPrivateRingAttributes.USER_EMAIL.value],
+                                        keys_pairs_for_email[key_pair][KeyPairPrivateRingAttributes.KEY_ID.value],
+                                        keys_pairs_for_email[key_pair][KeyPairPrivateRingAttributes.PUBLIC_KEY.value],
+                                        keys_pairs_for_email[key_pair][
+                                            KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value],
+                                        keys_pairs_for_email[key_pair][
+                                            KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value],
+                                        keys_pairs_for_email[key_pair][KeyPairPrivateRingAttributes.ALGORITHM.value],
+                                        key_pair,
+                                    ))
 
 
 def make_public_key_ring_table(notebook: ttk.Notebook):
     public_key_tab = ttk.Frame(notebook)
     notebook.add(public_key_tab, text="Public Key Ring")
 
-    # Create the public key ring table
-    public_key_table = ttk.Treeview(public_key_tab, columns=("PUBLIC_KEY", "USER_EMAIL", "USER_NAME", "ALGORITHM"),
+    public_key_table = ttk.Treeview(public_key_tab,
+                                    columns=("PUBLIC_KEY", "KEY_ID", "USER_EMAIL", "USER_NAME", "ALGORITHM", "TYPE"),
                                     show="headings")
 
-    # Set column headings
     public_key_table.heading("PUBLIC_KEY", text="Public Key (Shortened)")
+    public_key_table.heading("KEY_ID", text="Key ID")
     public_key_table.heading("USER_EMAIL", text="User Email")
     public_key_table.heading("USER_NAME", text="User Name")
     public_key_table.heading("ALGORITHM", text="Algorithm")
+    public_key_table.heading("TYPE", text="Type")
 
     # Add column tooltips
     public_key_table.column("PUBLIC_KEY", width=200)
@@ -62,34 +73,38 @@ def make_public_key_ring_table(notebook: ttk.Notebook):
 
 def reset_and_fill_public_ring_table(public_key_table: ttk.Treeview, user: User):
     public_key_table.delete(*public_key_table.get_children())
-    for email in user.key_manager.get_public_keyring_dictionary().keys():
-        public_key_json: dict = user.key_manager.get_public_keyring_dictionary()[email]
-        public_key_table.insert("", "end",
-                                values=(
-                                    public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value],
-                                    public_key_json[PublicKeyPublicRingAttributes.USER_EMAIL.value],
-                                    public_key_json[PublicKeyPublicRingAttributes.USER_NAME.value],
-                                    public_key_json[PublicKeyPublicRingAttributes.ALGORITHM.value]))
+    emails = user.key_manager.get_public_keyring_dictionary().keys()
+    for email in emails:
+        public_keys_for_email = user.key_manager.get_public_keyring_dictionary()[email]
+        for public_key in public_keys_for_email:
+            public_key_table.insert("", "end",
+                                    values=(
+                                        public_keys_for_email[public_key][
+                                            PublicKeyPublicRingAttributes.PUBLIC_KEY.value],
+                                        public_keys_for_email[public_key][PublicKeyPublicRingAttributes.KEY_ID.value],
+                                        public_keys_for_email[public_key][
+                                            PublicKeyPublicRingAttributes.USER_EMAIL.value],
+                                        public_keys_for_email[public_key][
+                                            PublicKeyPublicRingAttributes.USER_NAME.value],
+                                        public_keys_for_email[public_key][
+                                            PublicKeyPublicRingAttributes.ALGORITHM.value],
+                                        public_key,
+                                    ))
 
 
-def tab_changed(secret_key_table, public_key_table, event, user):
-    # print("Tab changed, refreshing tables")
+def refresh(secret_key_table, public_key_table, user):
     reset_and_fill_public_ring_table(public_key_table, user)
     reset_and_fill_secret_ring_table(secret_key_table, user)
 
 
-def key_overview_tab_gen(notebook: ttk.Notebook, user: User):
+def key_overview_tab_gen(notebook: ttk.Notebook, user: User, logout_callback):
     notebook.pack(fill=tk.BOTH, expand=True)
     secret_key_table = make_secret_key_ring_table(notebook)
 
     reset_and_fill_secret_ring_table(secret_key_table, user)
-    # Pack the secret key ring table
     secret_key_table.pack(fill=tk.BOTH, expand=True)
 
     public_key_table = make_public_key_ring_table(notebook)
     reset_and_fill_public_ring_table(public_key_table, user)
 
-    notebook.bind("<<NotebookTabChanged>>", lambda event: tab_changed(secret_key_table, public_key_table, event, user))
-
-    # Pack the public key ring table
     public_key_table.pack(fill=tk.BOTH, expand=True)
