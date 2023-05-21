@@ -23,8 +23,7 @@ def show_main_window(username):
         gui_start(show_main_window)
 
     keyg_tab_gen(tabs, user, logout_callback)
-    key_overview_tab_gen(tabs, user)
-
+    key_overview_tab_gen(tabs, user, logout_callback)
     send_msg_tab_gen(tabs, user, logout_callback)
     receive_msg_tab_gen(tabs, user, logout_callback)
 

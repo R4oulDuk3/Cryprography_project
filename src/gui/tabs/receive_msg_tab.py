@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from src.pgp.user.user import User
 
 
-def receive_msg_tab_gen(notebook, user):
+def receive_msg_tab_gen(notebook, user: User, logout_callback):
     receive_msg_tab = ttk.Frame(notebook)
     notebook.add(receive_msg_tab, text="Receive message")
 
@@ -23,3 +24,11 @@ def receive_msg_tab_gen(notebook, user):
     # Open message to be received
     receive_msg_btn = ttk.Button(receive_msg_tab, text="Open")
     receive_msg_btn.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+
+    # Logout
+    logout_separator = ttk.Separator(receive_msg_tab, orient="horizontal")
+    logout_separator.grid(row=3, column=0, columnspan=12, padx=0, pady=10, sticky="we")
+    username_label = ttk.Label(receive_msg_tab, text=f"Current user: {user.user_name}")
+    username_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
+    logout_btn = ttk.Button(receive_msg_tab, text="Logout", command=logout_callback)
+    logout_btn.grid(row=4, column=1, columnspan=1, padx=10, pady=10)
