@@ -5,6 +5,7 @@ from src.pgp.consts.consts import Algorithm, \
 from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.hash.hash import SHA1Hasher
 from src.pgp.key.key import PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
+from src.pgp.key.key_id import made_key_id
 from src.pgp.key.key_serializer import KeySerializer
 
 
@@ -71,7 +72,8 @@ class SecretKeyRingSerializer:
             KeyPairPrivateRingAttributes.PUBLIC_KEY.value: public_key_bytes.hex(),
             KeyPairPrivateRingAttributes.ALGORITHM.value: key_pair.get_algorithm().value,
             KeyPairPrivateRingAttributes.USER_NAME.value: user_name,
-            KeyPairPrivateRingAttributes.USER_EMAIL.value: user_email
+            KeyPairPrivateRingAttributes.USER_EMAIL.value: user_email,
+            KeyPairPrivateRingAttributes.KEY_ID.value: made_key_id(key_bytes=public_key_bytes)
         }
         return key_json
 
@@ -96,7 +98,8 @@ class PublicKeyRingSerializer:
             PublicKeyPublicRingAttributes.PUBLIC_KEY.value: public_key_bytes.hex(),
             PublicKeyPublicRingAttributes.ALGORITHM.value: Algorithm.RSA.value,
             PublicKeyPublicRingAttributes.USER_NAME.value: user_name,
-            PublicKeyPublicRingAttributes.USER_EMAIL.value: user_email
+            PublicKeyPublicRingAttributes.USER_EMAIL.value: user_email,
+            PublicKeyPublicRingAttributes.KEY_ID.value: made_key_id(key_bytes=public_key_bytes)
         }
 
 
