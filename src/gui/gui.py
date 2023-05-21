@@ -16,10 +16,7 @@ def show_main_window(username):
     window.title(f"PGP - Zastita podataka")
     window.geometry("900x800")
     user: User = User(username)
-
     tabs = ttk.Notebook(window)
-
-    user = User(username)
 
     def logout_callback():
         window.destroy()
@@ -27,8 +24,9 @@ def show_main_window(username):
 
     keyg_tab_gen(tabs, user, logout_callback)
     key_overview_tab_gen(tabs, user)
-    send_msg_tab_gen(tabs, user)
-    receive_msg_tab_gen(tabs, user)
+
+    send_msg_tab_gen(tabs, user, logout_callback)
+    receive_msg_tab_gen(tabs, user, logout_callback)
 
     tabs.pack()
     window.mainloop()
