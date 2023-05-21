@@ -1,7 +1,7 @@
 from abc import abstractmethod, ABC
 from Crypto.Random import get_random_bytes
 from src.pgp.consts.consts import Algorithm
-from src.pgp.key.key import SessionKey, TripleDESSessionKey
+from src.pgp.key.key import SessionKey, TripleDESSessionKey, CAST128SessionKey
 from src.pgp.util.util import validate_if_algorithm_symmetric_encryption
 
 
@@ -30,5 +30,5 @@ class TripleDESSessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
 
 
 class CAST128SessionKeyGeneratorStrategy(SessionKeyGeneratorStrategy):
-    def generate_session_key(self) -> TripleDESSessionKey:
-        return TripleDESSessionKey(get_random_bytes(16))
+    def generate_session_key(self) -> CAST128SessionKey:
+        return CAST128SessionKey(get_random_bytes(16))

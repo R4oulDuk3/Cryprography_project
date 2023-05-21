@@ -96,11 +96,11 @@ class SecretKeyRing:
 
     def get_key_pair_by_key_id(self, key_id: str, password: str) -> KeyPair:
         for user_email in self._serialized_key_pair_dictionary:
-            public_key_ring_element = self._serialized_key_pair_dictionary[user_email]
-            for attribute in public_key_ring_element:
-                public_key_json = public_key_ring_element[attribute]
-                if public_key_json[KeyPairPrivateRingAttributes.KEY_ID.value] == key_id:
-                    return self._serializer.key_pair_json_deserialize(key_json=public_key_json, password=password)
+            secret_key_ring_element = self._serialized_key_pair_dictionary[user_email]
+            for attribute in secret_key_ring_element:
+                key_pair_json = secret_key_ring_element[attribute]
+                if key_pair_json[KeyPairPrivateRingAttributes.KEY_ID.value] == key_id:
+                    return self._serializer.key_pair_json_deserialize(key_json=key_pair_json, password=password)
         raise Exception("Key pair with key id: " + key_id + " does not exist")
 
     def get_signing_key_id_for_email(self, email: str) -> str:
@@ -159,6 +159,11 @@ def test_secret_key_ring():
     secret_key_ring.save()
     key_pair_fetched = secret_key_ring.get_key_pair_by_user_email(user_mail="mail", password="password",
                                                                   algorithm_type=AlgorithmType.SIGNING)
+    print("key_pair_fetched " + str(key_pair_fetched.get_public_key().get_key()))
+    key_id = secret_key_ring.get_signing_key_id_for_email(email="mail")
+    print(key_id)
+    key_pair_fetched2 = secret_key_ring.get_key_pair_by_key_id(key_id=key_id, password="password")
+    print("key_pair_fetched " + str(key_pair_fetched2.get_public_key().get_key()))
     print(key_pair_fetched.get_public_key().get_key())
     print(key_pair_fetched.get_private_key().get_key())
     secret_key_ring.delete_key_pair_by_user_email(user_email="mail", password="password",
