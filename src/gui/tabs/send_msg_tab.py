@@ -85,7 +85,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     from_email_label = ttk.Label(send_msg_tab, text="From Email:")
     from_email_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     from_email_combobox = ttk.Combobox(send_msg_tab,
-                                       values=list(user.key_manager.get_private_keyring_dictionary().keys()))
+                                        values=list(user.key_manager.get_private_keyring_dictionary().keys()),
+                                        state = "readonly")
     from_email_combobox.grid(row=1, column=1, padx=12, pady=4)
 
     from_email_key_selected_label = ttk.Label(send_msg_tab, text="")
@@ -107,7 +108,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     # To Email
     to_email_label = ttk.Label(send_msg_tab, text="To Email:")
     to_email_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
-    to_email_combobox = ttk.Combobox(send_msg_tab, values=list(user.key_manager.get_public_keyring_dictionary().keys()))
+    to_email_combobox = ttk.Combobox(send_msg_tab, values=list(user.key_manager.get_public_keyring_dictionary().keys()),
+                                     state = "readonly")
 
     to_email_combobox.grid(row=3, column=1, padx=12, pady=4)
 
@@ -123,7 +125,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     symmetric_algo_label = ttk.Label(send_msg_tab, text="Symmetric Algorithm:")
     symmetric_algo_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
     symmetric_algo_combo = ttk.Combobox(send_msg_tab,
-                                        values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS])
+                                        values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS],
+                                        state = "readonly")
     symmetric_algo_combo.grid(row=4, column=1, padx=12, pady=4)
 
     # Compress
