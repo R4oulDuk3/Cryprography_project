@@ -9,8 +9,8 @@ from src.pgp.key.keyring.secret import SecretKeyRing
 class KeyManager:
     def __init__(self, user_name: str):
         self._user_name = user_name
-        self._private_key_ring = SecretKeyRing(user_name)
-        self._public_key_ring = PublicKeyRing()
+        self._private_key_ring = SecretKeyRing(user_name=user_name)
+        self._public_key_ring = PublicKeyRing(user_name=user_name)
         self._key_pair_generator = KeyPairGenerator()
         self._key_serializer = KeySerializer()
 
@@ -36,7 +36,6 @@ class KeyManager:
                                                                        key_size=key_size)
         self._public_key_ring.add_public_key(public_key=key_pair.get_public_key(),
                                              user_email=email,
-                                             user_name=self._user_name,
                                              algorithm_type=algorithm_type)
         self._private_key_ring.add_key_pair(key_pair=key_pair,
                                             password=password,
@@ -65,7 +64,6 @@ class KeyManager:
 
         self._public_key_ring.add_public_key(public_key=key_pair.get_public_key(),
                                              user_email=email,
-                                             user_name=self._user_name,
                                              algorithm_type=algorithm_type)
         self._private_key_ring.add_key_pair(key_pair=key_pair,
                                             password=password,

@@ -27,6 +27,7 @@ class KeyPairPrivateRingAttributes(Enum):
 class PublicKeyRingElementAttributes(Enum):
     SIGNING_KEY = 'signing_public_key'
     ENCRYPTION_KEY = 'encryption_public_key'
+    USER_NAME = 'user_name'
 
 
 class PublicKeyPublicRingAttributes(Enum):

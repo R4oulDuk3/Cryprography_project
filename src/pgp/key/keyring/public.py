@@ -41,7 +41,8 @@ def _get_public_key_ring_element_attribute_by_algorithm_type(algorithm_type: Alg
 
 class PublicKeyRing:
 
-    def __init__(self):
+    def __init__(self, user_name: str):
+        self._user_name = user_name
         self._serializer = PublicKeyRingSerializer()
         self._serialized_key_dictionary = _load_key_dictionary_json()
 
@@ -49,16 +50,21 @@ class PublicKeyRing:
         The user_name is the name of the user who owns the private key for this public key.
     """
 
-    def add_public_key(self, public_key: PublicKey, user_email: str, user_name: str, algorithm_type: AlgorithmType):
+    def add_public_key(self, public_key: PublicKey, user_email: str, algorithm_type: AlgorithmType):
         validate_if_algorithm_matches_algorithm_type(algorithm=public_key.get_algorithm(), algorithm_type=algorithm_type)
-        public_key_ring_element = {}
+        public_key_ring_element = {
+            PublicKeyRingElementAttributes.USER_NAME.value: self._user_name,
+        }
         if user_email in self._serialized_key_dictionary:
             public_key_ring_element = self._serialized_key_dictionary[user_email]
+
+        if public_key_ring_element[PublicKeyRingElementAttributes.USER_NAME.value] != self._user_name:
+            raise Exception(f"A user already created keys for email: {user_email} with name: {self._user_name}")
         attribute = _get_public_key_ring_element_attribute_by_algorithm_type(algorithm_type)
         if attribute.value in public_key_ring_element:
             raise Exception(f"Public key for {algorithm_type.value} already exists for user email: " + user_email)
 
-        public_key_json = self._serializer.public_key_json_serialize(public_key=public_key, user_name=user_name,
+        public_key_json = self._serializer.public_key_json_serialize(public_key=public_key, user_name=self._user_name,
                                                                      user_email=user_email)
         public_key_ring_element[attribute.value] = public_key_json
         self._serialized_key_dictionary[user_email] = public_key_ring_element
@@ -134,16 +140,16 @@ class PublicKeyRing:
 
 
 def test_public_key_ring():
-    public_key_ring = PublicKeyRing()
+    public_key_ring = PublicKeyRing(user_name="name")
     key_pair_generator = KeyPairGenerator()
     key_pair = key_pair_generator.generate_key_pair(Algorithm.RSA, 1024)
     public_key = key_pair.get_public_key()
-    public_key_ring.add_public_key(public_key=public_key, user_email="email", user_name="name",
+    public_key_ring.add_public_key(public_key=public_key, user_email="email",
                                    algorithm_type=AlgorithmType.ASYMMETRIC_ENCRYPTION)
     public_key_ring.save()
     key_pair = key_pair_generator.generate_key_pair(Algorithm.RSA, 1024)
     public_key = key_pair.get_public_key()
-    public_key_ring.add_public_key(public_key=public_key, user_email="email", user_name="name",
+    public_key_ring.add_public_key(public_key=public_key, user_email="email",
                                    algorithm_type=AlgorithmType.SIGNING)
     public_key_ring.save()
     print(public_key_ring.get_key_pair_dictionary())
