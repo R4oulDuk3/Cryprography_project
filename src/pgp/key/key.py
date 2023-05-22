@@ -59,6 +59,8 @@ class TripleDESSessionKey(SessionKey):
     def get_key(self) -> bytes:
         return self._key
 
+# TODO: Dodati ELGAMAL kljuceve
+
 
 class KeyPair:
 

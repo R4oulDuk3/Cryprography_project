@@ -34,7 +34,7 @@ class AbstractAsymmetricEncryptionStrategy(ABC):
     def decrypt(self, private_key: PrivateKey, ciphertext: str | bytes) -> bytes:
         pass
 
-
+# TODO: Implement ElGamal encryption/decryption
 class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
     def encrypt(self, public_key: PublicKey, plaintext: str | bytes) -> bytes:
         pass

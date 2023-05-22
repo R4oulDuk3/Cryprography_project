@@ -62,7 +62,7 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
             algorithm=Algorithm.DSA
         )
 
-
+# TODO: Implementirati ElGamal
 # Note: Ovaj moze da se koristi za enkripciju
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:

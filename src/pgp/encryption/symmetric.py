@@ -51,7 +51,7 @@ class TripleDESSymmetricEncryptionStrategy(AbstractSymmetricEncryptionStrategy):
         iv = data[:DES3.block_size]
         encrypted_data = data[DES3.block_size:]
         tdes = DES3.new(session_key.get_key(), DES3.MODE_CFB, iv)
-        decrypted_data = tdes.decrypt(data[DES3.block_size:])
+        decrypted_data = tdes.decrypt(encrypted_data)
         return decrypted_data
 
 

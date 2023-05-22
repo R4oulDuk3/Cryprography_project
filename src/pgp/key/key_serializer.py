@@ -19,7 +19,7 @@ class KeySerializer:
         with open(private_key_pem_path, 'r') as f:
             private_key_pem = f.read()
         algorithm = conclude_pem_algorithm(key_pem=private_key_pem)
-
+        # TODO: Implement ElGamal i DSA
         if algorithm == Algorithm.RSA:
             return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(private_key_pem.encode(UTF_8)))
         else:
@@ -29,13 +29,14 @@ class KeySerializer:
         with open(public_key_pem_path, 'r') as f:
             public_key_pem = f.read()
         algorithm = conclude_pem_algorithm(key_pem=public_key_pem)
-
+        # TODO: Implement ElGamal i DSA
         if algorithm == Algorithm.RSA:
             return RSAPublicKey(rsa.PublicKey.load_pkcs1(public_key_pem.encode(UTF_8)))
         else:
             raise NotImplementedError()
 
     def export_private_key_to_pem(self, key_pair: KeyPair, private_key_pem_path: str):
+        # TODO: Implement ElGamal i DSA
         if key_pair.get_algorithm() == Algorithm.RSA:
             with open(private_key_pem_path, 'w') as f:
                 f.write(key_pair.get_private_key().get_key().save_pkcs1().decode(UTF_8))
@@ -43,6 +44,7 @@ class KeySerializer:
             raise NotImplementedError()
 
     def export_public_key_to_pem(self, key_pair: KeyPair, public_key_pem_path: str):
+        # TODO: Implement ElGamal i DSA
         if key_pair.get_algorithm() == Algorithm.RSA:
             with open(public_key_pem_path, 'w') as f:
                 f.write(key_pair.get_public_key().get_key().save_pkcs1().decode(UTF_8))
@@ -50,12 +52,14 @@ class KeySerializer:
             raise NotImplementedError()
 
     def public_key_to_bytes(self, key: PublicKey) -> bytes:
+        # TODO: Implement ElGamal i DSA
         if isinstance(key, RSAPublicKey):
             return key.get_key().save_pkcs1()
         else:
             raise NotImplementedError()
 
     def private_key_to_bytes(self, key: PrivateKey) -> bytes:
+        # TODO: Implement ElGamal i DSA
         if isinstance(key, RSAPrivateKey):
             return key.get_key().save_pkcs1()
         else:
@@ -70,12 +74,14 @@ class KeySerializer:
             raise NotImplementedError()
 
     def bytes_to_public_key(self, key_bytes: bytes, algorithm: Algorithm) -> PublicKey:
+        # TODO: Implement ElGamal i DSA
         if algorithm == Algorithm.RSA:
             return RSAPublicKey(rsa.PublicKey.load_pkcs1(key_bytes))
         else:
             raise NotImplementedError()
 
     def bytes_to_private_key(self, key_bytes: bytes, algorithm: Algorithm) -> PrivateKey:
+        # TODO: Implement ElGamal i DSA
         if algorithm == Algorithm.RSA:
             return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(key_bytes))
         else:
