@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-
 from src.pgp.compression.compressor import ZIPCompressor
 from src.pgp.conversion.convertor import Radix64Convertor
 from src.pgp.encryption.asymmetric import AsymmetricEncryptor
@@ -13,28 +12,32 @@ from src.pgp.transfer.receiver import Receiver
 from src.pgp.user.user import User
 
 
-def receive_message_callback(user: User, message_content_label: ttk.Label, path_to_message: str):
-    key_manager = KeyManager(user_name=user.user_name)
-    message_signer = Signer()
-    symmetric_encryptor = SymmetricEncryptor()
-    asymmetric_encryptor = AsymmetricEncryptor()
-    compressor = ZIPCompressor()
-    convertor = Radix64Convertor()
-    session_key_generator = SessionKeyGenerator()
-    key_serializer = KeySerializer()
-    receiver = Receiver(key_manager=key_manager,
-                        message_signer=message_signer,
-                        symmetric_encryptor=symmetric_encryptor,
-                        asymmetric_encryptor=asymmetric_encryptor,
-                        compressor=compressor,
-                        convertor=convertor,
-                        session_key_generator=session_key_generator,
-                        key_serializer=key_serializer)
-    message = receiver.unpack_message(path_to_message)
-    # print(message)
-    plaintext = receiver.decrypt_message(message, password="1234")
-    print(plaintext)
-    message_content_label.config(text="Message:\t" + plaintext.decode())
+def receive_message_callback(user: User, message_content_label: ttk.Label, path_to_message: str, password: str):
+    try:
+        key_manager = KeyManager(user_name=user.user_name)
+        message_signer = Signer()
+        symmetric_encryptor = SymmetricEncryptor()
+        asymmetric_encryptor = AsymmetricEncryptor()
+        compressor = ZIPCompressor()
+        convertor = Radix64Convertor()
+        session_key_generator = SessionKeyGenerator()
+        key_serializer = KeySerializer()
+        receiver = Receiver(key_manager=key_manager,
+                            message_signer=message_signer,
+                            symmetric_encryptor=symmetric_encryptor,
+                            asymmetric_encryptor=asymmetric_encryptor,
+                            compressor=compressor,
+                            convertor=convertor,
+                            session_key_generator=session_key_generator,
+                            key_serializer=key_serializer)
+        message = receiver.unpack_message(path_to_message)
+        # print(message)
+        plaintext = receiver.decrypt_message(message, password)
+        print(plaintext)
+        message_content_label.config(text="Message:\t" + plaintext.decode())
+    except Exception as e:
+        print(f"Error while receiving message: {e}")
+        message_content_label.config(text=f"Error while receiving message: {e}")
 
 
 def select_directory(msg_path_label: ttk.Label):
@@ -49,13 +52,19 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     receive_msg_tab = ttk.Frame(notebook)
     notebook.add(receive_msg_tab, text="Receive message")
 
+    # Password
+    password_label = ttk.Label(receive_msg_tab, text="Password:")
+    password_label.grid(row=0, column=0, padx=12, pady=4, sticky=tk.W)
+    password_entry = ttk.Entry(receive_msg_tab, show="*")
+    password_entry.grid(row=0, column=1, padx=12, pady=4, sticky=tk.W)
+
     # Message path
     receive_msg_label = ttk.Label(receive_msg_tab, text="Message path:")
     receive_msg_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.")
     msg_path_label.grid(row=2, column=1, padx=12, pady=4, sticky=tk.W)
     browse_private_key_button = ttk.Button(receive_msg_tab, text="Browse",
-                                           command= lambda:select_directory(msg_path_label))
+                                           command=lambda: select_directory(msg_path_label))
     browse_private_key_button.grid(row=2, column=0, padx=4, pady=4)
 
     # Open message to be received
@@ -67,10 +76,11 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     message_content_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
 
     receive_msg_btn.bind("<Button-1>", lambda event: receive_message_callback(
-                        user,
-                        message_content_label,
-                        path_to_message=msg_path_label.cget("text")
-                        ))
+        user,
+        message_content_label,
+        password=password_entry.get(),
+        path_to_message=msg_path_label.cget("text")
+    ))
 
     # Logout
     logout_separator = ttk.Separator(receive_msg_tab, orient="horizontal")
