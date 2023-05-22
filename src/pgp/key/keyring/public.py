@@ -82,6 +82,8 @@ class PublicKeyRing:
         for user_email in self._serialized_key_dictionary:
             public_key_ring_element = self._serialized_key_dictionary[user_email]
             for attribute in public_key_ring_element:
+                if attribute == PublicKeyRingElementAttributes.USER_NAME.value:
+                    continue
                 public_key_json = public_key_ring_element[attribute]
                 if public_key_json[PublicKeyRingElementAttributes.KEY_ID.value] == key_id:
                     del public_key_ring_element[attribute]
@@ -92,6 +94,8 @@ class PublicKeyRing:
         for user_email in self._serialized_key_dictionary:
             public_key_ring_element = self._serialized_key_dictionary[user_email]
             for attribute in public_key_ring_element:
+                if attribute == PublicKeyRingElementAttributes.USER_NAME.value:
+                    continue
                 public_key_json = public_key_ring_element[attribute]
                 if public_key_json[PublicKeyPublicRingAttributes.KEY_ID.value] == key_id:
                     return self._serializer.public_key_json_deserialize(public_key_json)

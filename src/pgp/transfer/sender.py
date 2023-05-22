@@ -78,9 +78,10 @@ class Sender:
         signing_key = self.key_manager.get_key_pair_by_key_id(key_id=signing_key_id,
                                                               password=password).get_private_key()
 
-        signature: bytes = self.message_signer.sign(message=encrypted_message,
+        signature: bytes = self.message_signer.sign(message=message,
                                                     private_key=signing_key,
                                                     algorithm=signing_key.get_algorithm())
+
         return PGPMessage(encrypted_message=encrypted_message,
                           encrypted_session_key=encrypted_session_key,
                           signature=signature,
