@@ -64,23 +64,26 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.")
     msg_path_label.grid(row=2, column=1, padx=12, pady=4, sticky=tk.W)
     browse_private_key_button = ttk.Button(receive_msg_tab, text="Browse",
-                                           command=lambda: select_directory(msg_path_label))
-    browse_private_key_button.grid(row=2, column=0, padx=4, pady=4)
+                                           command=lambda: select_directory(msg_path_label)
+    )
+    browse_private_key_button.grid(row=2, column=0, padx=0, pady=4)
 
     # Open message to be received
     receive_msg_btn = ttk.Button(receive_msg_tab, text="Open message")
-    receive_msg_btn.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+    receive_msg_btn.grid(row=3, column=1, columnspan=2, padx=0, pady=10, sticky="w")
 
     # Message
-    message_content_label = ttk.Label(receive_msg_tab, text="")
-    message_content_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
+    message_content_label = ttk.Label(receive_msg_tab, text="", wraplength=300)
+    message_content_label.grid(row=4, column=0, columnspan=2, padx=12, pady=4, sticky=tk.W)
 
-    receive_msg_btn.bind("<Button-1>", lambda event: receive_message_callback(
-        user,
-        message_content_label,
-        password=password_entry.get(),
-        path_to_message=msg_path_label.cget("text")
-    ))
+    receive_msg_btn.bind(
+        "<Button-1>", lambda event: receive_message_callback(
+            user,
+            message_content_label,
+            password=password_entry.get(),
+            path_to_message=msg_path_label.cget("text")
+        )
+    )
 
     # Logout
     logout_separator = ttk.Separator(receive_msg_tab, orient="horizontal")

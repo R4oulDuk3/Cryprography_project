@@ -5,6 +5,7 @@ from src.pgp.consts.consts import KeyPairPrivateRingAttributes, PublicKeyPublicR
 from src.pgp.user.user import User
 
 
+# TODO: update when the user generates a key pair!
 def make_secret_key_ring_table(notebook: ttk.Notebook):
     secret_key_tab = ttk.Frame(notebook)
     notebook.add(secret_key_tab, text="Secret Key Ring")
