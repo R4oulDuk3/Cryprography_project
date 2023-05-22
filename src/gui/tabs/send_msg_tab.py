@@ -24,7 +24,7 @@ def send_message_callback(user: User,
                           symmetric_algo_combobox: ttk.Combobox,
                           compress_var: tk.BooleanVar,
                           convert_var: tk.BooleanVar,
-                          password_text: tk.Text,
+                          password_entry: tk.Entry,
                           directory_label: ttk.Label,
                           result_label: ttk.Label):
     try:
@@ -32,7 +32,7 @@ def send_message_callback(user: User,
         to_email = to_email_combobox.get()
         from_email = from_email_combobox.get()
         directory = directory_label["text"]
-        password = password_text.get("1.0", tk.END)
+        password = password_entry.get()
         password = password.replace("\n", "")
         symmetric_algo = symmetric_algo_combobox.get()
         compress = compress_var.get()
@@ -100,8 +100,9 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     # Password
     password_label = ttk.Label(send_msg_tab, text="Password:")
     password_label.grid(row=2, column=0, padx=12, pady=4, sticky=tk.W)
-    password_text = tk.Text(send_msg_tab, height=1, width=30)
-    password_text.grid(row=2, column=1, padx=12, pady=4, sticky="we")
+    password_entry = ttk.Entry(send_msg_tab, show="*")
+    password_entry.grid(row=2, column=1, padx=12, pady=4)
+    password_entry.config(width=23)
 
     # To Email
     to_email_label = ttk.Label(send_msg_tab, text="To Email:")
@@ -160,7 +161,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     send_msg_btn.bind("<Button-1>", lambda event: send_message_callback(
         message_text=message_text,
         from_email_combobox=from_email_combobox,
-        password_text=password_text,
+        password_entry=password_entry,
         to_email_combobox=to_email_combobox,
         symmetric_algo_combobox=symmetric_algo_combo,
         compress_var=compress_var,
@@ -168,8 +169,6 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
         directory_label=directory_label,
         user=user,
         result_label=result_label))
-
-
 
     # Logout
     logout_separator = ttk.Separator(send_msg_tab, orient="horizontal")
