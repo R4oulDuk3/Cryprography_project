@@ -103,6 +103,8 @@ def test_key_serializer():
     key_serializer.export_public_key_to_pem(key_pair=key_pair, public_key_pem_path="public_key.pem")
     private_key = key_serializer.import_private_key_from_pem(private_key_pem_path="private_key.pem")
     public_key = key_serializer.import_public_key_from_pem(public_key_pem_path="public_key.pem")
+    print(private_key)
+    print(public_key)
     assert private_key.get_key().save_pkcs1() == key_pair.get_private_key().get_key().save_pkcs1()
     assert public_key.get_key().save_pkcs1() == key_pair.get_public_key().get_key().save_pkcs1()
     print("KeySerializer test passed")
