@@ -180,4 +180,4 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     username_label.grid(row=11, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(send_msg_tab, text="Logout", command=logout_callback)
 
-    logout_btn.grid(row=11, column=1, columnspan=1, padx=10, pady=10)
+    logout_btn.grid(row=12, column=0, padx=12, pady=4, sticky=tk.W)

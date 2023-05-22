@@ -106,7 +106,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
     username_label = ttk.Label(key_gen_tab, text=f"Current user: {user.user_name}")
     username_label.grid(row=15, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(key_gen_tab, text="Logout", command=logout_callback)
-    logout_btn.grid(row=15, column=1, columnspan=1, padx=10, pady=10)
+    logout_btn.grid(row=16, column=0, padx=12, pady=4, sticky=tk.W)
 
 
 def update_signature_label(asym_algo_combo, signature_label):
