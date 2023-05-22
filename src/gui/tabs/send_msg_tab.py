@@ -24,7 +24,7 @@ def send_message_callback(user: User,
                           symmetric_algo_combobox: ttk.Combobox,
                           compress_var: tk.BooleanVar,
                           convert_var: tk.BooleanVar,
-                          password_text: tk.Text,
+                          password_entry: tk.Entry,
                           directory_label: ttk.Label,
                           result_label: ttk.Label):
     try:
@@ -32,7 +32,7 @@ def send_message_callback(user: User,
         to_email = to_email_combobox.get()
         from_email = from_email_combobox.get()
         directory = directory_label["text"]
-        password = password_text.get("1.0", tk.END)
+        password = password_entry.get()
         password = password.replace("\n", "")
         symmetric_algo = symmetric_algo_combobox.get()
         compress = compress_var.get()
@@ -85,7 +85,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     from_email_label = ttk.Label(send_msg_tab, text="From Email:")
     from_email_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     from_email_combobox = ttk.Combobox(send_msg_tab,
-                                       values=list(user.key_manager.get_private_keyring_dictionary().keys()))
+                                        values=list(user.key_manager.get_private_keyring_dictionary().keys()),
+                                        state = "readonly")
     from_email_combobox.grid(row=1, column=1, padx=12, pady=4)
 
     from_email_key_selected_label = ttk.Label(send_msg_tab, text="")
@@ -100,13 +101,15 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     # Password
     password_label = ttk.Label(send_msg_tab, text="Password:")
     password_label.grid(row=2, column=0, padx=12, pady=4, sticky=tk.W)
-    password_text = tk.Text(send_msg_tab, height=1, width=30)
-    password_text.grid(row=2, column=1, padx=12, pady=4, sticky="we")
+    password_entry = ttk.Entry(send_msg_tab, show="*")
+    password_entry.grid(row=2, column=1, padx=12, pady=4)
+    password_entry.config(width=23)
 
     # To Email
     to_email_label = ttk.Label(send_msg_tab, text="To Email:")
     to_email_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
-    to_email_combobox = ttk.Combobox(send_msg_tab, values=list(user.key_manager.get_public_keyring_dictionary().keys()))
+    to_email_combobox = ttk.Combobox(send_msg_tab, values=list(user.key_manager.get_public_keyring_dictionary().keys()),
+                                     state = "readonly")
 
     to_email_combobox.grid(row=3, column=1, padx=12, pady=4)
 
@@ -122,7 +125,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     symmetric_algo_label = ttk.Label(send_msg_tab, text="Symmetric Algorithm:")
     symmetric_algo_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
     symmetric_algo_combo = ttk.Combobox(send_msg_tab,
-                                        values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS])
+                                        values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS],
+                                        state = "readonly")
     symmetric_algo_combo.grid(row=4, column=1, padx=12, pady=4)
 
     # Compress
@@ -160,7 +164,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     send_msg_btn.bind("<Button-1>", lambda event: send_message_callback(
         message_text=message_text,
         from_email_combobox=from_email_combobox,
-        password_text=password_text,
+        password_entry=password_entry,
         to_email_combobox=to_email_combobox,
         symmetric_algo_combobox=symmetric_algo_combo,
         compress_var=compress_var,
@@ -169,8 +173,6 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
         user=user,
         result_label=result_label))
 
-
-
     # Logout
     logout_separator = ttk.Separator(send_msg_tab, orient="horizontal")
     logout_separator.grid(row=10, column=0, columnspan=12, padx=0, pady=10, sticky="we")
@@ -178,4 +180,4 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     username_label.grid(row=11, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(send_msg_tab, text="Logout", command=logout_callback)
 
-    logout_btn.grid(row=11, column=1, columnspan=1, padx=10, pady=10)
+    logout_btn.grid(row=12, column=0, padx=12, pady=4, sticky=tk.W)
