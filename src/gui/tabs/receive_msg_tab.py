@@ -73,7 +73,7 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     receive_msg_btn.grid(row=3, column=1, columnspan=2, padx=0, pady=10, sticky="w")
 
     # Message
-    message_content_label = ttk.Label(receive_msg_tab, text="", wraplength=300)
+    message_content_label = ttk.Label(receive_msg_tab, text="", wraplength=310)
     message_content_label.grid(row=4, column=0, columnspan=2, padx=12, pady=4, sticky=tk.W)
 
     receive_msg_btn.bind(

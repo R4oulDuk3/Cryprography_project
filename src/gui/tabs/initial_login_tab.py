@@ -23,8 +23,14 @@ def gui_start(show_main_window):
 
     def login_window_btn():
         username = username_entry.get()
+        if username == "":
+            login_result_label.config(text="Username field empty!")
+            return
         window.destroy()
         show_main_window(username)
+
+    login_result_label = ttk.Label(login_window, text="")
+    login_result_label.pack(padx=10, pady=10)
 
     continue_button = ttk.Button(login_window, text="Continue", command=login_window_btn)
     continue_button.pack(padx=10, pady=10)
