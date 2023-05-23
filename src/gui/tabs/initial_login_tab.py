@@ -24,7 +24,7 @@ def gui_start(show_main_window):
     def login_window_btn():
         username = username_entry.get()
         if username == "":
-            login_result_label.config(text="Username field empty!")
+            login_result_label.config(text="Username field empty!", foreground="red")
             return
         window.destroy()
         show_main_window(username)

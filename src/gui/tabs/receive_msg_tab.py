@@ -34,18 +34,18 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
         # print(message)
         plaintext = receiver.decrypt_message(message, password)
         print(plaintext)
-        message_content_label.config(text="Message:\t" + plaintext.decode())
+        message_content_label.config(text="Message:\t" + plaintext.decode(), foreground="black")
     except Exception as e:
         print(f"Error while receiving message: {e}")
-        message_content_label.config(text=f"Error while receiving message: {e}")
+        message_content_label.config(text=f"Error while receiving message: {e}", foreground="red")
 
 
 def select_directory(msg_path_label: ttk.Label):
     file_path = filedialog.askopenfilename(filetypes=[("Key Files", "*.pgp")])
     if file_path:
-        msg_path_label.config(text=file_path)
+        msg_path_label.config(text=file_path, foreground="black")
     else:
-        msg_path_label.config(text="No message selected.")
+        msg_path_label.config(text="No message selected.", foreground="black")
 
 
 def receive_msg_tab_gen(notebook, user: User, logout_callback):
@@ -61,7 +61,7 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     # Message path
     receive_msg_label = ttk.Label(receive_msg_tab, text="Message path:")
     receive_msg_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
-    msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.")
+    msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.", wraplength=300)
     msg_path_label.grid(row=2, column=1, padx=12, pady=4, sticky=tk.W)
     browse_private_key_button = ttk.Button(receive_msg_tab, text="Browse",
                                            command=lambda: select_directory(msg_path_label)

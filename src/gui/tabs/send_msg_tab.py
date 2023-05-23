@@ -14,7 +14,7 @@ def select_directory(directory_label: ttk.Label):
     if directory:
         directory_label.config(text=directory)
     else:
-        directory_label.config(text="No directory selected")
+        directory_label.config(text="No directory selected", foreground="black")
 
 
 def send_message_callback(user: User,
@@ -49,10 +49,10 @@ def send_message_callback(user: User,
                                                                          )
         user.sender.send_message(message=pgp_message,
                                  message_path=f"{directory}/{to_email}_{from_email}_{random.randint(0, 10000)}.pgp")
-        result_label.config(text="Message sent successfully")
+        result_label.config(text="Message sent successfully", foreground="green")
     except Exception as e:
         print(f"Error while sending message: {e}")
-        result_label.config(text=f"Error while sending message: {e}")
+        result_label.config(text=f"Error while sending message: {e}", foreground="red")
 
 
 def set_key_id_label(email_combobox: ttk.Combobox,
@@ -68,7 +68,10 @@ def set_key_id_label(email_combobox: ttk.Combobox,
     else:
         raise Exception("Invalid algorithm type")
     key_selected_label.config(
-        text=f"Algorithm use: {algorithm_type.value}, Algorithm: {public_key.get_algorithm().value}, Key ID: {key_id[0:32]}...")
+        text=f"Algorithm use: {algorithm_type.value},"
+             f" Algorithm: {public_key.get_algorithm().value},"
+             f" Key ID: {key_id[0:32]}..."
+    )
 
 
 def send_msg_tab_gen(notebook, user: User, logout_callback):
@@ -146,7 +149,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     radix64_checkbox.grid(row=6, column=1, padx=12, pady=4)
 
     # Directory Label
-    directory_label = ttk.Label(send_msg_tab, text="No directory selected")
+    directory_label = ttk.Label(send_msg_tab, text="No directory selected", wraplength=300)
     directory_label.grid(row=7, column=1, padx=12, pady=4, sticky=tk.W)
 
     # Select Directory Button
@@ -155,7 +158,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     select_directory_button.grid(row=7, column=0, padx=12, pady=4, sticky=tk.W)
 
     # Result
-    result_label = ttk.Label(send_msg_tab, text="")
+    result_label = ttk.Label(send_msg_tab, text="", wraplength=300)
     result_label.grid(row=9, column=1, padx=12, pady=4, sticky=tk.W)
 
     # Send Message button

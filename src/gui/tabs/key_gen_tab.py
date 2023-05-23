@@ -13,10 +13,10 @@ from src.pgp.user.user import User
 def generate_keypair_callback(user: User, generate_result_label: ttk.Label, email: str, key_type: str, asym_algo: str,
                               key_size: int, password: str):
     if email == "":
-        generate_result_label.config(text="Email input box is empty.")
+        generate_result_label.config(text="Email input box is empty.", foreground="black")
         return
     elif password == "":
-        generate_result_label.config(text="Password input box is empty.")
+        generate_result_label.config(text="Password input box is empty.", foreground="black")
         return
     try:
         asym_algo = Algorithm.RSA if asym_algo == "RSA" else Algorithm.ELGAMAL if asym_algo == "ElGamal" else None
@@ -29,17 +29,17 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
             email=email,
             algorithm_type=key_type
         )
-        generate_result_label.config(text="Keys generated successfully!")
+        generate_result_label.config(text="Keys generated successfully!", foreground="green")
     except Exception as e:
         print(f"Error while generating keys: {e}")
-        generate_result_label.config(text=f"Error while generating keys: {e}")
+        generate_result_label.config(text=f"Error while generating keys: {e}", foreground="red")
 
 
 def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_private: str, path_public: str,
                          email: str, password: str, key_type: str):
 
     if path_private == "" or path_public == "":
-        import_keys_result_label.config(text="No location selected!")
+        import_keys_result_label.config(text="No location selected!", foreground="black")
         return
     try:
         key_manager = KeyManager(user.user_name)
@@ -52,16 +52,16 @@ def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_p
             password=password,
             algorithm_type=key_type
         )
-        import_keys_result_label.config(text="Successfully loaded keys!")
+        import_keys_result_label.config(text="Successfully loaded keys!", foreground="green")
     except Exception as e:
         print(f"Error while exporting message: {e}")
-        import_keys_result_label.config(text=f"Error while importing key: {e}")
+        import_keys_result_label.config(text=f"Error while importing key: {e}", foreground="red")
 
 
 def export_keys_callback(user: User, export_keys_result_label: ttk.Label, path: str,
                          password: str, email: str, key_type: str):
     if path == "":
-        export_keys_result_label.config(text="No location selected!")
+        export_keys_result_label.config(text="No location selected!", foreground="black")
         return
     try:
         algorithm_type = AlgorithmType.ASYMMETRIC_ENCRYPTION if key_type == "Encryption" \
@@ -77,10 +77,10 @@ def export_keys_callback(user: User, export_keys_result_label: ttk.Label, path: 
             key_pair=key_pair,
             public_key_pem_path=path+"/public_key_"+user.user_name+"_"+key_type+"_"+email+".pem"
         )
-        export_keys_result_label.config(text="Successfully exported public and private keys!")
+        export_keys_result_label.config(text="Successfully exported public and private keys!", foreground="green")
     except Exception as e:
         print(f"Error while exporting keys: {e}")
-        export_keys_result_label.config(text=f"Error while exporting keys: {e}")
+        export_keys_result_label.config(text=f"Error while exporting keys: {e}", foreground="red")
 
 
 def keyg_tab_gen(notebook, user, logout_callback):
@@ -98,7 +98,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
             import_private_key_entry.insert(tk.END, file_path)
             import_keys_result_label.config(text="")
         else:
-            import_keys_result_label.config(text="No .pem file selected.")
+            import_keys_result_label.config(text="No .pem file selected.", foreground="black")
 
     def browse_import_public_key():
         file_path = filedialog.askopenfilename(filetypes=[("Key Files", "*.pem")])
@@ -107,7 +107,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
             import_public_key_entry.insert(tk.END, file_path)
             import_keys_result_label.config(text="")
         else:
-            import_keys_result_label.config(text="No .pem file selected.")
+            import_keys_result_label.config(text="No .pem file selected.", foreground="black")
 
     def browse_export_key():
         directory = filedialog.askdirectory()
@@ -116,7 +116,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
             export_key_entry.insert(tk.END, directory)
             export_keys_result_label.config(text="")
         else:
-            export_keys_result_label.config(text="No export folder selected.")
+            export_keys_result_label.config(text="No export folder selected.", foreground="black")
 
     key_gen_tab = ttk.Frame(notebook)
     notebook.add(key_gen_tab, text="Key Generation")
