@@ -38,7 +38,7 @@ def send_message_callback(user: User,
         compress = compress_var.get()
         convert = convert_var.get()
         print(f"|{password}|", len(password))
-        pgp_message: PGPMessage = user.sender.prepare_message_with_mails(message=message,
+        pgp_message: PGPMessage = user.sender.prepare_message_with_mails(plaintext=message,
                                                                          sender_mail=from_email,
                                                                          receiver_mail=to_email,
                                                                          password=password,

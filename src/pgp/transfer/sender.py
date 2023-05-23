@@ -9,6 +9,7 @@ from src.pgp.key.key_serializer import KeySerializer
 
 from src.pgp.key.manager import KeyManager
 from src.pgp.message.message import PGPMessage
+from src.pgp.message.plaintext_and_signature import PlaintextAndOptionalSignature
 from src.pgp.signature.sign import Signer
 from src.pgp.transfer.receiver import test_message_receive
 from src.pgp.util.util import validate_if_algorithm_symmetric_encryption
@@ -33,69 +34,111 @@ class Sender:
         self.session_key_generator = session_key_generator
         self.key_serializer = key_serializer
 
+
     def prepare_message_with_mails(self,
-                                   message: str,
+                                   plaintext: str,
                                    sender_mail: str,
                                    receiver_mail: str,
                                    password: str,
                                    symmetric_encryption_algorithm: Algorithm,
-                                   convert: bool, compress: bool) -> PGPMessage:
+                                   sign: bool = False,
+                                   encrypt: bool = False, ) -> str:
         signing_key_id = self.key_manager.get_signing_key_id_by_user_email(sender_mail)
         asymmetric_encryption_key_id = self.key_manager.get_encryption_key_id_by_user_email(receiver_mail)
-        return self.prepare_message(message=message,
+        return self.prepare_message(plaintext=plaintext,
                                     asymmetric_encryption_key_id=asymmetric_encryption_key_id,
                                     signing_key_id=signing_key_id,
                                     password=password,
                                     symmetric_encryption_algorithm=symmetric_encryption_algorithm,
-                                    convert=convert,
-                                    compress=compress)
+                                    )
 
     def prepare_message(self,
-                        message: str,
+                        plaintext: str,
                         asymmetric_encryption_key_id: str,
-                        signing_key_id: str,
-                        password: str,
-                        symmetric_encryption_algorithm: Algorithm,
-                        convert: bool, compress: bool) -> PGPMessage:
+                        password: str = None,
+                        signing_key_id: str = None,
+                        symmetric_encryption_algorithm: Algorithm = None,
+                        sign: bool = False,
+                        encrypt: bool = False,
+                        ) -> str:
         validate_if_algorithm_symmetric_encryption(symmetric_encryption_algorithm)
-        session_key: SessionKey = self.session_key_generator.generate_session_key(symmetric_encryption_algorithm)
-        if convert:
-            message = self.convertor.encode(message)
 
-        encrypted_message: bytes = self.symmetric_encryptor.encrypt(session_key=session_key,
-                                                                    plaintext=message,
-                                                                    algorithm=symmetric_encryption_algorithm)
-        if compress:
-            encrypted_message = self.compressor.compress(encrypted_message)
-        receiver_public_key: PublicKey = self.key_manager.get_public_key_by_key_id(key_id=asymmetric_encryption_key_id)
+        # SIGN MESSAGE
+        plaintext_and_optional_signature = self._sign(password, plaintext, sign, signing_key_id)
 
-        session_key_bytes: bytes = self.key_serializer.session_key_to_bytes(session_key)
+        # COMPRESS MESSAGE
 
-        encrypted_session_key: bytes = self.asymmetric_encryptor.encrypt(plaintext=session_key_bytes,
-                                                                         public_key=receiver_public_key,
-                                                                         algorithm=receiver_public_key.get_algorithm())
+        compressed_plaintext_and_optional_signature = self._compress(plaintext_and_optional_signature)
 
-        signing_key = self.key_manager.get_key_pair_by_key_id(key_id=signing_key_id,
-                                                              password=password).get_private_key()
+        # ENCRYPT MESSAGE
 
-        signature: bytes = self.message_signer.sign(message=message,
-                                                    private_key=signing_key,
-                                                    algorithm=signing_key.get_algorithm())
+        pgp_message = self._encrypt(asymmetric_encryption_key_id, compressed_plaintext_and_optional_signature, encrypt,
+                                    symmetric_encryption_algorithm)
 
-        return PGPMessage(encrypted_message=encrypted_message,
-                          encrypted_session_key=encrypted_session_key,
-                          signature=signature,
-                          asymmetric_encryption_key_id=asymmetric_encryption_key_id,
-                          signing_key_id=signing_key_id,
-                          symmetric_encryption_algorithm=symmetric_encryption_algorithm,
-                          was_converted=convert,
-                          was_compressed=compress
-                          )
+        # Convert to string
+        pgp_message_str = self._convert(pgp_message)
 
-    def send_message(self, message: PGPMessage, message_path: str):
-        message_bytes = message.to_bytes()
-        with open(message_path, "wb") as file:
-            file.write(message_bytes)
+        return pgp_message_str
+
+    def _convert(self, pgp_message):
+        pgp_message_bytes: bytes = pgp_message.to_bytes()
+        pgp_message_str = self.convertor.encode(pgp_message_bytes)
+        return pgp_message_str
+
+    def _encrypt(self, asymmetric_encryption_key_id, compressed_plaintext_and_optional_signature, encrypt,
+                 symmetric_encryption_algorithm):
+        if encrypt:
+            session_key: SessionKey = self.session_key_generator.generate_session_key(symmetric_encryption_algorithm)
+
+            compressed_plaintext_and_optional_signature: bytes = self.symmetric_encryptor.encrypt(
+                session_key=session_key,
+                plaintext=compressed_plaintext_and_optional_signature,
+                algorithm=symmetric_encryption_algorithm)
+
+            receiver_public_key: PublicKey = self.key_manager.get_public_key_by_key_id(
+                key_id=asymmetric_encryption_key_id)
+
+            session_key_bytes: bytes = self.key_serializer.session_key_to_bytes(session_key)
+            # ENCRYPT SESSION KEY
+            encrypted_session_key: bytes = self.asymmetric_encryptor.encrypt(plaintext=session_key_bytes,
+                                                                             public_key=receiver_public_key,
+                                                                             algorithm=receiver_public_key.get_algorithm())
+        else:
+            encrypted_session_key = None
+        pgp_message: PGPMessage = PGPMessage(
+            message_and_optional_signature_compressed_bytes=compressed_plaintext_and_optional_signature,
+            is_encrypted=encrypt,
+            symmetric_encryption_algorithm=symmetric_encryption_algorithm,
+            asymmetric_encryption_key_id=asymmetric_encryption_key_id,
+            encrypted_session_key=encrypted_session_key,
+        )
+        return pgp_message
+
+    def _compress(self, plaintext_and_optional_signature):
+        compressed_plaintext_and_optional_signature: bytes = self.compressor.compress(
+            plaintext_and_optional_signature.to_bytes())
+        return compressed_plaintext_and_optional_signature
+
+    def _sign(self, password, plaintext, sign, signing_key_id):
+        if sign:
+            signing_key = self.key_manager.get_key_pair_by_key_id(key_id=signing_key_id,
+                                                                  password=password).get_private_key()
+
+            signature: bytes = self.message_signer.sign(message=plaintext,
+                                                        private_key=signing_key,
+                                                        algorithm=signing_key.get_algorithm())
+        else:
+            signing_key_id = None
+            signature = None
+        plaintext_and_optional_signature = PlaintextAndOptionalSignature(plaintext=plaintext,
+                                                                         is_signed=sign,
+                                                                         signature_bytes=signature,
+                                                                         signing_key_id=signing_key_id)
+        return plaintext_and_optional_signature
+
+    def send_message(self, pgp_message_str: str, message_path: str):
+        with open(message_path, "w") as file:
+            file.write(pgp_message_str)
 
 
 def init_test():
@@ -140,15 +183,15 @@ def test_message_send():
                     convertor=Radix64Convertor(),
                     session_key_generator=SessionKeyGenerator(),
                     key_serializer=KeySerializer())
-    message = sender.prepare_message_with_mails(message="Hello World",
-                                                sender_mail="user1@gmail.com",
-                                                receiver_mail="user2@gmail.com",
-                                                password="password",
-                                                symmetric_encryption_algorithm=Algorithm.TRIPLE_DES,
-                                                convert=True,
-                                                compress=True)
-    print(str(message))
-    sender.send_message(message=message, message_path="message.pgp")
+    pgp_message_str = sender.prepare_message_with_mails(plaintext="Hello World",
+                                                        sender_mail="user1@gmail.com",
+                                                        receiver_mail="user2@gmail.com",
+                                                        password="password",
+                                                        symmetric_encryption_algorithm=Algorithm.TRIPLE_DES,
+                                                        sign=True,
+                                                        encrypt=True)
+    print(str(pgp_message_str))
+    sender.send_message(pgp_message_str=pgp_message_str, message_path="message.pgp")
 
 
 if __name__ == '__main__':

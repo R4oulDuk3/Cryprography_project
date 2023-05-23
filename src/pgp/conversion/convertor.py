@@ -4,23 +4,23 @@ import base64
 
 class Convertor(ABC):
     @abstractmethod
-    def encode(self, data):
+    def encode(self, data: str | bytes):
         raise NotImplementedError()
 
     @abstractmethod
-    def decode(self, data):
+    def decode(self, data: str | bytes):
         raise NotImplementedError()
 
 
 class Radix64Convertor(Convertor):
-    def encode(self, data):
+    def encode(self, data: str | bytes):
         if isinstance(data, str):
             data = data.encode('utf-8')
 
         encoded_data = base64.b64encode(data)
         return encoded_data.decode('utf-8')
 
-    def decode(self, data):
+    def decode(self, data: str | bytes):
         decoded_data = base64.b64decode(data)
         return decoded_data
 
