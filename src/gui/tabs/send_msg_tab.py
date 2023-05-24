@@ -39,18 +39,19 @@ def send_message_callback(user: User,
         sign = sign_var.get()
         if not encrypt:
             symmetric_algo = None
+        else:
+            symmetric_algo = Algorithm(symmetric_algo)
         print(f"|{password}|", len(password))
         pgp_message_str: str = user.sender.prepare_message_with_mails(plaintext=message,
-                                                                         sender_mail=from_email,
-                                                                         receiver_mail=to_email,
-                                                                         password=password,
-                                                                         symmetric_encryption_algorithm=Algorithm(
-                                                                             symmetric_algo),
-                                                                         sign=sign,
-                                                                         encrypt=encrypt
-                                                                         )
+                                                                      sender_mail=from_email,
+                                                                      receiver_mail=to_email,
+                                                                      password=password,
+                                                                      symmetric_encryption_algorithm=symmetric_algo,
+                                                                      sign=sign,
+                                                                      encrypt=encrypt
+                                                                      )
         user.sender.send_message(pgp_message_str=pgp_message_str,
-                                 message_path=f"{directory}/{to_email}_{from_email}_{random.randint(0, 10000)}.pgp")
+                                 message_path=f"{directory}/{from_email}_{to_email}_{random.randint(0, 10000)}.pgp")
         result_label.config(text="Message sent successfully", foreground="green")
     except Exception as e:
         print(f"Error while sending message: {e}")
@@ -146,7 +147,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     encrypt_var = tk.BooleanVar()
     encrypt_var.set(True)
     encrypt_checkbox = ttk.Checkbutton(send_msg_tab, variable=encrypt_var, command=lambda:
-                                                                            set_symmetric_algo_combo_state(encrypt_var.get()))
+    set_symmetric_algo_combo_state(encrypt_var.get()))
     encrypt_checkbox.grid(row=4, column=1, padx=12, pady=4)
 
     # Sign

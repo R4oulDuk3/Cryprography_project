@@ -61,7 +61,8 @@ class Sender:
                         sign: bool = False,
                         encrypt: bool = False,
                         ) -> str:
-        validate_if_algorithm_symmetric_encryption(symmetric_encryption_algorithm)
+        if symmetric_encryption_algorithm is not None:
+            validate_if_algorithm_symmetric_encryption(symmetric_encryption_algorithm)
 
         # SIGN MESSAGE
         plaintext_and_optional_signature = self._sign(password, plaintext, sign, signing_key_id)
