@@ -22,8 +22,8 @@ def send_message_callback(user: User,
                           to_email_combobox: ttk.Combobox,
                           from_email_combobox: ttk.Combobox,
                           symmetric_algo_combobox: ttk.Combobox,
-                          compress_var: tk.BooleanVar,
-                          convert_var: tk.BooleanVar,
+                          encrypt_var: tk.BooleanVar,
+                          sign_var: tk.BooleanVar,
                           password_entry: tk.Entry,
                           directory_label: ttk.Label,
                           result_label: ttk.Label):
@@ -35,19 +35,21 @@ def send_message_callback(user: User,
         password = password_entry.get()
         password = password.replace("\n", "")
         symmetric_algo = symmetric_algo_combobox.get()
-        compress = compress_var.get()
-        convert = convert_var.get()
+        encrypt = encrypt_var.get()
+        sign = sign_var.get()
+        if not encrypt:
+            symmetric_algo = None
         print(f"|{password}|", len(password))
-        pgp_message: PGPMessage = user.sender.prepare_message_with_mails(plaintext=message,
+        pgp_message_str: str = user.sender.prepare_message_with_mails(plaintext=message,
                                                                          sender_mail=from_email,
                                                                          receiver_mail=to_email,
                                                                          password=password,
                                                                          symmetric_encryption_algorithm=Algorithm(
                                                                              symmetric_algo),
-                                                                         convert=convert,
-                                                                         compress=compress
+                                                                         sign=sign,
+                                                                         encrypt=encrypt
                                                                          )
-        user.sender.send_message(message=pgp_message,
+        user.sender.send_message(pgp_message_str=pgp_message_str,
                                  message_path=f"{directory}/{to_email}_{from_email}_{random.randint(0, 10000)}.pgp")
         result_label.config(text="Message sent successfully", foreground="green")
     except Exception as e:
@@ -88,8 +90,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     from_email_label = ttk.Label(send_msg_tab, text="From Email:")
     from_email_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     from_email_combobox = ttk.Combobox(send_msg_tab,
-                                        values=list(user.key_manager.get_private_keyring_dictionary().keys()),
-                                        state = "readonly")
+                                       values=user.key_manager.get_all_private_keyring_mails(),
+                                       state="readonly")
     from_email_combobox.grid(row=1, column=1, padx=12, pady=4)
 
     from_email_key_selected_label = ttk.Label(send_msg_tab, text="")
@@ -111,8 +113,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     # To Email
     to_email_label = ttk.Label(send_msg_tab, text="To Email:")
     to_email_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
-    to_email_combobox = ttk.Combobox(send_msg_tab, values=list(user.key_manager.get_public_keyring_dictionary().keys()),
-                                     state = "readonly")
+    to_email_combobox = ttk.Combobox(send_msg_tab, values=user.key_manager.get_all_public_keyring_mails(),
+                                     state="readonly")
 
     to_email_combobox.grid(row=3, column=1, padx=12, pady=4)
 
@@ -126,27 +128,34 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
 
     # Symmetric Algorithm
     symmetric_algo_label = ttk.Label(send_msg_tab, text="Symmetric Algorithm:")
-    symmetric_algo_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
+    symmetric_algo_label.grid(row=5, column=0, padx=12, pady=4, sticky=tk.W)
     symmetric_algo_combo = ttk.Combobox(send_msg_tab,
                                         values=[algorithm.value for algorithm in SYMMETRIC_ENCRYPTION_ALGORITHMS],
-                                        state = "readonly")
-    symmetric_algo_combo.grid(row=4, column=1, padx=12, pady=4)
+                                        state="disabled")
+    symmetric_algo_combo.grid(row=5, column=1, padx=12, pady=4)
 
-    # Compress
-    compress_label = ttk.Label(send_msg_tab, text="Compress:")
-    compress_label.grid(row=5, column=0, padx=12, pady=4, sticky=tk.W)
-    compress_var = tk.BooleanVar()
-    compress_var.set(True)
-    compress_checkbox = ttk.Checkbutton(send_msg_tab, variable=compress_var)
-    compress_checkbox.grid(row=5, column=1, padx=12, pady=4)
+    def set_symmetric_algo_combo_state(enabled: bool):
+        if enabled:
+            symmetric_algo_combo.config(state="readonly")
+        else:
+            symmetric_algo_combo.config(state="disabled")
 
-    # Convert to Radix-64
-    radix64_label = ttk.Label(send_msg_tab, text="Convert to Radix-64:")
-    radix64_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
-    radix64_var = tk.BooleanVar()
-    radix64_var.set(True)
-    radix64_checkbox = ttk.Checkbutton(send_msg_tab, variable=radix64_var)
-    radix64_checkbox.grid(row=6, column=1, padx=12, pady=4)
+    # Encrypt
+    encrypt_label = ttk.Label(send_msg_tab, text="Encrypt:")
+    encrypt_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
+    encrypt_var = tk.BooleanVar()
+    encrypt_var.set(True)
+    encrypt_checkbox = ttk.Checkbutton(send_msg_tab, variable=encrypt_var, command=lambda:
+                                                                            set_symmetric_algo_combo_state(encrypt_var.get()))
+    encrypt_checkbox.grid(row=4, column=1, padx=12, pady=4)
+
+    # Sign
+    sign_label = ttk.Label(send_msg_tab, text="Sign message:")
+    sign_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
+    sign_var = tk.BooleanVar()
+    sign_var.set(True)
+    sign_checkbox = ttk.Checkbutton(send_msg_tab, variable=sign_var)
+    sign_checkbox.grid(row=6, column=1, padx=12, pady=4)
 
     # Directory Label
     directory_label = ttk.Label(send_msg_tab, text="No directory selected", wraplength=300)
@@ -170,8 +179,8 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
         password_entry=password_entry,
         to_email_combobox=to_email_combobox,
         symmetric_algo_combobox=symmetric_algo_combo,
-        compress_var=compress_var,
-        convert_var=radix64_var,
+        encrypt_var=encrypt_var,
+        sign_var=sign_var,
         directory_label=directory_label,
         user=user,
         result_label=result_label))

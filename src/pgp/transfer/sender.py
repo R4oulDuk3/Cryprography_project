@@ -137,6 +137,8 @@ class Sender:
         return plaintext_and_optional_signature
 
     def send_message(self, pgp_message_str: str, message_path: str):
+        print("Sending message to file: " + message_path)
+        print("Message: " + pgp_message_str)
         with open(message_path, "w") as file:
             file.write(pgp_message_str)
 

@@ -37,7 +37,6 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
 
 def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_private: str, path_public: str,
                          email: str, password: str, key_type: str):
-
     if path_private == "" or path_public == "":
         import_keys_result_label.config(text="No location selected!", foreground="black")
         return
@@ -71,11 +70,11 @@ def export_keys_callback(user: User, export_keys_result_label: ttk.Label, path: 
         key_serializer = KeySerializer()
         key_serializer.export_private_key_to_pem(
             key_pair=key_pair,
-            private_key_pem_path=path+"/private_key_"+user.user_name+"_"+key_type+"_"+email+".pem"
+            private_key_pem_path=path + "/private_key_" + user.user_name + "_" + key_type + "_" + email + ".pem"
         )
         key_serializer.export_public_key_to_pem(
             key_pair=key_pair,
-            public_key_pem_path=path+"/public_key_"+user.user_name+"_"+key_type+"_"+email+".pem"
+            public_key_pem_path=path + "/public_key_" + user.user_name + "_" + key_type + "_" + email + ".pem"
         )
         export_keys_result_label.config(text="Successfully exported public and private keys!", foreground="green")
     except Exception as e:
@@ -309,7 +308,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
     # Key selection combobox for Export
     export_email_selection_combo = ttk.Combobox(
         scrollable_frame,
-        values=list(user.key_manager.get_private_keyring_dictionary().keys()),
+        values=user.key_manager.get_all_private_keyring_mails(),
         state="readonly"
     )
     export_email_selection_combo.grid(row=23, column=1, padx=12, pady=4)
@@ -359,5 +358,6 @@ def keyg_tab_gen(notebook, user, logout_callback):
     scrollbar.pack(side="right", fill="y")
 
     def _on_mousewheel(event):
-        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+
     key_gen_tab.bind_all("<MouseWheel>", _on_mousewheel)

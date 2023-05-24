@@ -114,11 +114,17 @@ class KeyManager:
     def get_encryption_key_id_by_user_email(self, email: str) -> str:
         return self._public_key_ring.get_encryption_key_id_for_email(user_email=email)
 
-    def get_public_keyring_dictionary(self):
-        return self._public_key_ring.get_key_pair_dictionary()
+    def get_all_public_keyring_rows(self):
+        return self._public_key_ring.get_all_public_keyring_rows()
 
-    def get_private_keyring_dictionary(self):
-        return self._private_key_ring.get_key_pair_dictionary()
+    def get_all_private_keyring_rows(self):
+        return self._private_key_ring.get_all_private_keyring_rows()
+
+    def get_all_private_keyring_mails(self):
+        return self._private_key_ring.get_all_mails()
+
+    def get_all_public_keyring_mails(self):
+        return self._public_key_ring.get_all_mails()
 
 
 def test_key_manager():

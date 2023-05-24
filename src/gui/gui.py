@@ -1,10 +1,9 @@
 import tkinter as tk
 from tkinter import ttk
 
+from src.gui.tabs.key_overview_tab import key_overview_tab_gen
 from src.pgp.consts.consts import Algorithm, AlgorithmType
-from src.pgp.user.user import User
 from tabs.key_gen_tab import keyg_tab_gen
-from src.gui.tabs.key_overiew.key_overview_tab import key_overview_tab_gen
 from tabs.send_msg_tab import send_msg_tab_gen
 from tabs.receive_msg_tab import receive_msg_tab_gen
 from tabs.initial_login_tab import gui_start
@@ -23,7 +22,7 @@ def show_main_window(username):
         gui_start(show_main_window)
 
     keyg_tab_gen(tabs, user, logout_callback)
-    # key_overview_tab_gen(tabs, user, logout_callback)
+    key_overview_tab_gen(tabs, user, logout_callback)
     send_msg_tab_gen(tabs, user, logout_callback)
     receive_msg_tab_gen(tabs, user, logout_callback)
 

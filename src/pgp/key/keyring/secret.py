@@ -6,11 +6,13 @@
 """
 import json
 import os
+from typing import List
 
 from src.pgp.consts.consts import DATA_DIR, SECRET_KEY_RING_FILE, UTF_8, Algorithm, PrivateRingElementAttributes, \
     AlgorithmType, KeyPairPrivateRingAttributes
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import KeyPair
+from src.pgp.key.keyring.keyring_dto import PrivateKeyringRowDTO
 from src.pgp.key.keyring.keyring_serializer import SecretKeyRingSerializer
 from src.pgp.util.util import validate_if_algorithm_matches_algorithm_type
 
@@ -135,8 +137,28 @@ class SecretKeyRing:
         треба да буду јасно видљиви на корисничком интерфејсу...
     """
 
-    def get_key_pair_dictionary(self):
-        return self._serialized_key_pair_dictionary
+    def get_all_private_keyring_rows(self) -> List[PrivateKeyringRowDTO]:
+        private_keyring_element_dtos = []
+        for user_email in self._serialized_key_pair_dictionary:
+            private_keyring_element = self._serialized_key_pair_dictionary[user_email]
+            for attribute in private_keyring_element:
+                key_pair_json = private_keyring_element[attribute]
+                private_keyring_element_dtos.append(
+                    PrivateKeyringRowDTO(
+                        user_email=user_email,
+                        user_name=key_pair_json[KeyPairPrivateRingAttributes.USER_NAME.value],
+                        key_id=key_pair_json[KeyPairPrivateRingAttributes.KEY_ID.value],
+                        algorithm_type=attribute,
+                        algorithm=key_pair_json[KeyPairPrivateRingAttributes.ALGORITHM.value],
+                        encrypted_private_key=key_pair_json[KeyPairPrivateRingAttributes.ENCRYPTED_PRIVATE_KEY.value],
+                        hashed_password_with_salt=key_pair_json[KeyPairPrivateRingAttributes.HASHED_PASSWORD_WITH_SALT.value],
+                        public_key=key_pair_json[KeyPairPrivateRingAttributes.PUBLIC_KEY.value],
+                    ))
+        return private_keyring_element_dtos
+
+    def get_all_mails(self) -> List[str]:
+        return list(self._serialized_key_pair_dictionary.keys())
+
 
 
 def test_secret_key_ring():
@@ -151,7 +173,8 @@ def test_secret_key_ring():
     key_pair = key_pair_generator.generate_key_pair(
         algorithm=Algorithm.RSA, key_size=1024)
     secret_key_ring.add_key_pair(key_pair=key_pair, password="password", user_email="mail",
-                                 algorithm_type=AlgorithmType.SIGNING)
+                             algorithm_type=AlgorithmType.SIGNING)
+    print(secret_key_ring.get_all_private_keyring_rows())
     print(key_pair.get_public_key().get_key())
     print(key_pair.get_private_key().get_key())
     print(secret_key_ring.get_signing_key_id_for_email(email="mail"))

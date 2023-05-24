@@ -6,11 +6,13 @@
 """
 import json
 import os
+from typing import List
 
 from src.pgp.consts.consts import DATA_DIR, PUBLIC_KEY_RING_FILE, Algorithm, AlgorithmType, \
     PublicKeyRingElementAttributes, PublicKeyPublicRingAttributes
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import PublicKey, KeyPair
+from src.pgp.key.keyring.keyring_dto import PublicKeyringRowDTO
 from src.pgp.key.keyring.keyring_serializer import PublicKeyRingSerializer
 from src.pgp.util.util import validate_if_algorithm_matches_algorithm_type
 
@@ -139,8 +141,28 @@ class PublicKeyRing:
         треба да буду јасно видљиви на корисничком интерфејсу...
     """
 
-    def get_key_pair_dictionary(self):
-        return self._serialized_key_dictionary
+    def get_all_public_keyring_rows(self) -> List[PublicKeyringRowDTO]:
+        public_keyring_element_dtos = []
+        for user_email in self._serialized_key_dictionary:
+            public_key_ring_element = self._serialized_key_dictionary[user_email]
+            for attribute in public_key_ring_element:
+                if attribute == PublicKeyRingElementAttributes.USER_NAME.value:
+                    continue
+                public_key_json = public_key_ring_element[attribute]
+                public_keyring_element_dtos.append(
+                    PublicKeyringRowDTO(user_email=user_email,
+                                        user_name=public_key_ring_element[PublicKeyRingElementAttributes.USER_NAME.value],
+                                        key_id=public_key_json[PublicKeyPublicRingAttributes.KEY_ID.value],
+                                        public_key=public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value],
+                                        algorithm_type=attribute,
+                                        algorithm=public_key_json[PublicKeyPublicRingAttributes.ALGORITHM.value],
+                                        ))
+
+        return public_keyring_element_dtos
+
+    def get_all_mails(self):
+        return list(self._serialized_key_dictionary.keys())
+
 
 
 def test_public_key_ring():
@@ -156,7 +178,7 @@ def test_public_key_ring():
     public_key_ring.add_public_key(public_key=public_key, user_email="email",
                                    algorithm_type=AlgorithmType.SIGNING)
     public_key_ring.save()
-    print(public_key_ring.get_key_pair_dictionary())
+    print(public_key_ring.get_all_public_keyring_rows())
     print(public_key_ring.get_signing_key_id_for_email(user_email="email"))
     print(public_key_ring.get_encryption_key_id_for_email(user_email="email"))
 
