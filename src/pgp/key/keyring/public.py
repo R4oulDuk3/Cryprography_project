@@ -163,6 +163,17 @@ class PublicKeyRing:
     def get_all_mails(self):
         return list(self._serialized_key_dictionary.keys())
 
+    def get_mail_by_key_id(self, key_id: str):
+        for user_email in self._serialized_key_dictionary:
+            public_key_ring_element = self._serialized_key_dictionary[user_email]
+            for attribute in public_key_ring_element:
+                if attribute == PublicKeyRingElementAttributes.USER_NAME.value:
+                    continue
+                public_key_json = public_key_ring_element[attribute]
+                if public_key_json[PublicKeyPublicRingAttributes.KEY_ID.value] == key_id:
+                    return user_email
+        raise Exception("No public key found for key id: " + key_id)
+
 
 
 def test_public_key_ring():

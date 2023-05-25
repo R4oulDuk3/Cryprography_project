@@ -126,6 +126,10 @@ class KeyManager:
     def get_all_public_keyring_mails(self):
         return self._public_key_ring.get_all_mails()
 
+    def get_user_mail_by_key_id(self, key_id: str):
+        return self._public_key_ring.get_mail_by_key_id(key_id=key_id)
+
+
 
 def test_key_manager():
     key_manager = KeyManager("user")

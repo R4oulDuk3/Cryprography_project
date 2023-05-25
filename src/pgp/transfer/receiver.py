@@ -1,3 +1,5 @@
+import mimetypes
+
 from src.pgp.compression.compressor import Compressor, ZIPCompressor
 from src.pgp.consts.consts import Algorithm
 from src.pgp.conversion.convertor import Convertor, Radix64Convertor
@@ -9,7 +11,7 @@ from src.pgp.key.key_serializer import KeySerializer
 
 from src.pgp.key.manager import KeyManager
 from src.pgp.message.message import PGPMessage
-from src.pgp.message.plaintext_and_signature import PlaintextAndOptionalSignature
+from src.pgp.message.message_body import MessageBody
 from src.pgp.signature.sign import Signer
 
 
@@ -32,12 +34,24 @@ class Receiver:
         self.session_key_generator = session_key_generator
         self.key_serializer = key_serializer
 
-    def unpack_message(self, path_to_message: str) -> PGPMessage:
-        with(open(path_to_message, "r")) as file:
-            message = file.read()
+    def _is_binary_file(self, file_path: str):
+        with open(file_path, "rb") as file:
+            return bool(file.read(1024).translate(None, bytearray(
+                {7, 8, 9, 10, 12, 13, 27} | set(range(0x20, 0x100)) - {0x7f})))
 
-        # Reconvert from radix64
-        message_bytes = self.convertor.decode(message)
+    def _is_text_file(self, file_path: str):
+        return not self._is_binary_file(file_path)
+
+    def unpack_message(self, path_to_message: str) -> PGPMessage:
+        if self._is_binary_file(path_to_message):
+            print("File is binary, reading...")
+            with(open(path_to_message, "rb")) as file:
+                message_bytes = file.read()
+        else:
+            print("File is text, decoding...")
+            with(open(path_to_message, "r")) as file:
+                message = file.read()
+            message_bytes = self.convertor.decode(message)
         return PGPMessage.from_bytes(data=message_bytes)
 
     def decrypt_message(self,
@@ -45,38 +59,39 @@ class Receiver:
                         password: str) -> str:
         print(message)
         # Decrypt session key
-        data_with_optional_signature_compressed_bytes = self._decrypt(message, password)
+        message_body_bytes = self._decrypt(message=message,
+                                           password=password)
 
         # Decompress message
-        message_with_optional_signature_bytes = self._decompress(data_with_optional_signature_compressed_bytes)
+        message_body_bytes = self._decompress(message=message,
+                                              message_body_bytes=message_body_bytes)
 
         # Unpack message
-        message_with_optional_signature: PlaintextAndOptionalSignature = PlaintextAndOptionalSignature.from_bytes(
-            data=message_with_optional_signature_bytes)
+        message_body: MessageBody = MessageBody.from_bytes(
+            data=message_body_bytes)
         # Verify signature
-        self._verify(message_with_optional_signature, password)
+        self._verify(message_body=message_body)
 
-        plaintext = message_with_optional_signature.plaintext
+        plaintext = message_body.plaintext
         return plaintext
 
-    def _verify(self, message_with_optional_signature, password):
-        if message_with_optional_signature.is_signed:
-            sender_public_key = self.key_manager.get_key_pair_by_key_id(
-                key_id=message_with_optional_signature.signing_key_id,
-                password=password).get_public_key()
-            is_verified = self.message_signer.verify(message=message_with_optional_signature.plaintext,
-                                                     signature=message_with_optional_signature.signature_bytes,
+    def _verify(self, message_body: MessageBody):
+        if message_body.is_signed:
+            sender_public_key = self.key_manager.get_public_key_by_key_id(key_id=message_body.signing_key_id, )
+            is_verified = self.message_signer.verify(message=message_body.plaintext,
+                                                     signature=message_body.signature_bytes,
                                                      public_key=sender_public_key,
                                                      algorithm=sender_public_key.get_algorithm())
             if not is_verified:
                 raise Exception("Signature is not verified")
 
-    def _decompress(self, data_with_optional_signature_compressed_bytes):
-        message_with_optional_signature_bytes = self.compressor.decompress(
-            data_with_optional_signature_compressed_bytes)
-        return message_with_optional_signature_bytes
+    def _decompress(self, message: PGPMessage, message_body_bytes: bytes):
+        if message.is_compressed:
+            message_body_bytes = self.compressor.decompress(
+                data=message_body_bytes, )
+        return message_body_bytes
 
-    def _decrypt(self, message, password):
+    def _decrypt(self, message: PGPMessage, password: str):
         if message.is_encrypted:
             receiver_private_key = self.key_manager.get_key_pair_by_key_id(key_id=message.asymmetric_encryption_key_id,
                                                                            password=password).get_private_key()
@@ -86,13 +101,13 @@ class Receiver:
             session_key: SessionKey = self.key_serializer.bytes_to_session_key(key_bytes=session_key_bytes,
                                                                                algorithm=message.symmetric_encryption_algorithm)
             # Decrypt message with optional signature
-            data_with_optional_signature_compressed_bytes = self.symmetric_encryptor.decrypt(
-                ciphertext=message.message_and_optional_signature_compressed_bytes,
+            message_body_bytes = self.symmetric_encryptor.decrypt(
+                ciphertext=message.message_body_bytes,
                 session_key=session_key,
                 algorithm=message.symmetric_encryption_algorithm)
         else:
-            data_with_optional_signature_compressed_bytes = message.message_and_optional_signature_compressed_bytes
-        return data_with_optional_signature_compressed_bytes
+            message_body_bytes = message.message_body_bytes
+        return message_body_bytes
 
 
 def test_message_receive():

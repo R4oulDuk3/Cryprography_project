@@ -7,6 +7,7 @@ from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.key.generate.session import SessionKeyGenerator
 from src.pgp.key.key_serializer import KeySerializer
 from src.pgp.key.manager import KeyManager
+from src.pgp.message.message import PGPMessage
 from src.pgp.signature.sign import Signer
 from src.pgp.transfer.receiver import Receiver
 from src.pgp.user.user import User
@@ -40,10 +41,14 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
         message_content_label.config(text=f"Error while receiving message: {e}", foreground="red")
 
 
-def select_directory(msg_path_label: ttk.Label):
+def select_directory(user: User, msg_path_label: ttk.Label):
     file_path = filedialog.askopenfilename(filetypes=[("Key Files", "*.pgp")])
     if file_path:
-        msg_path_label.config(text=file_path, foreground="black")
+        message: PGPMessage = user.receiver.unpack_message(file_path)
+        email = user.key_manager.get_user_mail_by_key_id(key_id=message.asymmetric_encryption_key_id)
+
+        msg_path_label.config(text=f"file path: {file_path}, email: {email},"
+                                   f" key_id {message.asymmetric_encryption_key_id}", foreground="black")
     else:
         msg_path_label.config(text="No message selected.", foreground="black")
 
@@ -64,7 +69,7 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.", wraplength=300)
     msg_path_label.grid(row=2, column=1, padx=12, pady=4, sticky=tk.W)
     browse_private_key_button = ttk.Button(receive_msg_tab, text="Browse",
-                                           command=lambda: select_directory(msg_path_label)
+                                           command=lambda: select_directory(user,msg_path_label)
     )
     browse_private_key_button.grid(row=2, column=0, padx=0, pady=4)
 

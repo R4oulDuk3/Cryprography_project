@@ -4,7 +4,7 @@ from src.pgp.consts.consts import UTF_8
 from src.pgp.message.util import write_chunk, read_chunk
 
 
-class PlaintextAndOptionalSignature:
+class MessageBody:
 
     def __init__(self,
                  plaintext: str,
@@ -56,13 +56,13 @@ class PlaintextAndOptionalSignature:
 
 
 def test_message_and_signature():
-    message_and_signature = PlaintextAndOptionalSignature(plaintext='Hello World!',
-                                                          is_signed=True,
-                                                          signature_bytes=b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c',
-                                                          signing_key_id='0x12345678')
+    message_and_signature = MessageBody(plaintext='Hello World!',
+                                        is_signed=True,
+                                        signature_bytes=b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c',
+                                        signing_key_id='0x12345678')
     bytes_ = message_and_signature.to_bytes()
     print(bytes_)
-    message_and_signature_ = PlaintextAndOptionalSignature.from_bytes(bytes_)
+    message_and_signature_ = MessageBody.from_bytes(bytes_)
     print(message_and_signature_)
     assert message_and_signature.plaintext == message_and_signature_.plaintext
 
