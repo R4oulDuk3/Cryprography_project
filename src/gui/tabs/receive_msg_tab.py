@@ -13,6 +13,8 @@ from src.pgp.transfer.receiver import Receiver
 from src.pgp.user.user import User
 
 
+path_to_message = ""
+
 def receive_message_callback(user: User, message_content_label: ttk.Label, path_to_message: str, password: str):
     try:
         key_manager = KeyManager(user_name=user.user_name)
@@ -35,25 +37,34 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
         # print(message)
         plaintext = receiver.decrypt_message(message, password)
         print(plaintext)
-        message_content_label.config(text="Message:\t" + plaintext.decode(), foreground="black")
+        message_content_label.config(text="Message:\t" + plaintext, foreground="black")
     except Exception as e:
         print(f"Error while receiving message: {e}")
         message_content_label.config(text=f"Error while receiving message: {e}", foreground="red")
 
 
-def select_directory(user: User, msg_path_label: ttk.Label):
+def select_directory(user: User, msg_path_label: ttk.Label, password_entry: tk.Entry):
+    global path_to_message
     file_path = filedialog.askopenfilename(filetypes=[("Key Files", "*.pgp")])
     if file_path:
+        path_to_message = file_path
         message: PGPMessage = user.receiver.unpack_message(file_path)
-        email = user.key_manager.get_user_mail_by_key_id(key_id=message.asymmetric_encryption_key_id)
+        if message.is_encrypted:
+            email = user.key_manager.get_user_mail_by_key_id(key_id=message.asymmetric_encryption_key_id)
 
-        msg_path_label.config(text=f"file path: {file_path}, email: {email},"
-                                   f" key_id {message.asymmetric_encryption_key_id}", foreground="black")
+            msg_path_label.config(text=f"file path: {file_path},encrypted, email: {email},"
+                                       f" key_id {message.asymmetric_encryption_key_id}", foreground="black")
+            password_entry.config(state="normal")
+        else:  # not encrypted
+            msg_path_label.config(text=f"file path: {file_path}, not encrypted", foreground="black")
+            password_entry.config(state="disabled")
     else:
         msg_path_label.config(text="No message selected.", foreground="black")
+        password_entry.config(state="disabled")
 
 
 def receive_msg_tab_gen(notebook, user: User, logout_callback):
+    global path_to_message
     receive_msg_tab = ttk.Frame(notebook)
     notebook.add(receive_msg_tab, text="Receive message")
 
@@ -62,15 +73,19 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     password_label.grid(row=0, column=0, padx=12, pady=4, sticky=tk.W)
     password_entry = ttk.Entry(receive_msg_tab, show="*")
     password_entry.grid(row=0, column=1, padx=12, pady=4, sticky=tk.W)
+    password_entry.config(state="disabled")
 
     # Message path
     receive_msg_label = ttk.Label(receive_msg_tab, text="Message path:")
     receive_msg_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     msg_path_label = ttk.Label(receive_msg_tab, text="No message selected.", wraplength=300)
     msg_path_label.grid(row=2, column=1, padx=12, pady=4, sticky=tk.W)
+
     browse_private_key_button = ttk.Button(receive_msg_tab, text="Browse",
-                                           command=lambda: select_directory(user,msg_path_label)
-    )
+                                           command=lambda: select_directory(user=user,
+                                                                            msg_path_label=msg_path_label,
+                                                                            password_entry=password_entry)
+                                           )
     browse_private_key_button.grid(row=2, column=0, padx=0, pady=4)
 
     # Open message to be received
@@ -86,7 +101,7 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
             user,
             message_content_label,
             password=password_entry.get(),
-            path_to_message=msg_path_label.cget("text")
+            path_to_message=path_to_message
         )
     )
 
@@ -97,4 +112,3 @@ def receive_msg_tab_gen(notebook, user: User, logout_callback):
     username_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(receive_msg_tab, text="Logout", command=logout_callback)
     logout_btn.grid(row=7, column=0, padx=12, pady=4, sticky=tk.W)
-
