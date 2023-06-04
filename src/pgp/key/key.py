@@ -59,7 +59,21 @@ class TripleDESSessionKey(SessionKey):
     def get_key(self) -> bytes:
         return self._key
 
-# TODO: Dodati ELGAMAL kljuceve
+
+class ElGamalPublicKey(PublicKey):
+    def __init__(self, p, g, y):
+        super().__init__((p, g, y), Algorithm.ELGAMAL)
+
+    def get_key(self):
+        return self._key  # returns (p, g, y)
+
+
+class ElGamalPrivateKey(PrivateKey):
+    def __init__(self, p, g, x):
+        super().__init__((p, g, x), Algorithm.ELGAMAL)
+
+    def get_key(self):
+        return self._key  # returns (p, g, x)
 
 
 class KeyPair:
