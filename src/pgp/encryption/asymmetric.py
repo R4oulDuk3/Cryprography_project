@@ -37,7 +37,6 @@ class AbstractAsymmetricEncryptionStrategy(ABC):
     def decrypt(self, private_key: PrivateKey, ciphertext: str | bytes) -> bytes:
         pass
 
-# TODO: Implement ElGamal encryption/decryption
 
 class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
     def encrypt(self, public_key: ElGamalPublicKey, plaintext: str | bytes) -> bytes:
@@ -94,15 +93,21 @@ if __name__ == "__main__":
         print("============================================")
 
         # El Gamal
-        p = getPrime(2048)
-        g = 2
-        x = int.from_bytes(get_random_bytes(64), byteorder='big')
-        y = pow(g, x, p)
-        ElGamal_public_key = ElGamalPublicKey(p, g, y)
-        ElGamal_private_key = ElGamalPrivateKey(p, g, x)
+        El_Gamal_key_pair = KeyPairGenerator().generate_key_pair(
+            Algorithm.ELGAMAL,
+            KeyPairGenerator().get_available_key_sizes()[0]
+        )
         message = 'My ElGamal message'
-        enciphered_message = AsymmetricEncryptor().encrypt(ElGamal_public_key, message, Algorithm.ELGAMAL)
-        deciphered_message = AsymmetricEncryptor().decrypt(ElGamal_private_key, enciphered_message, Algorithm.ELGAMAL)
+        enciphered_message = AsymmetricEncryptor().encrypt(
+            El_Gamal_key_pair.get_public_key(),
+            message,
+            Algorithm.ELGAMAL
+        )
+        deciphered_message = AsymmetricEncryptor().decrypt(
+            El_Gamal_key_pair.get_private_key(),
+            enciphered_message,
+            Algorithm.ELGAMAL
+        )
         print("============================================")
         print("\t" * 2 + "ElGamal encryption/decryption")
         print("--------------------------------------------")

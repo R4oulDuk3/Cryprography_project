@@ -9,10 +9,12 @@ from abc import abstractmethod, ABC
 
 import rsa
 from Crypto.PublicKey import DSA
+from Crypto.Random import get_random_bytes
+from Crypto.Util.number import getPrime
 
 from src.pgp.consts.consts import Algorithm, KEY_SIZES
 from src.pgp.key.key import KeyPair, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
-
+from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, PublicKey, PrivateKey, ElGamalPublicKey, ElGamalPrivateKey
 
 class KeyPairGenerator:
 
@@ -62,11 +64,19 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
             algorithm=Algorithm.DSA
         )
 
-# TODO: Implementirati ElGamal
+
 # Note: Ovaj moze da se koristi za enkripciju
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
-        pass
+        p = getPrime(key_size)
+        g = 2
+        x = int.from_bytes(get_random_bytes(64), byteorder='big')
+        y = pow(g, x, p)
+        return KeyPair(
+            private_key=ElGamalPrivateKey(p, g, x),
+            public_key=ElGamalPublicKey(p, g, y),
+            algorithm=Algorithm.ELGAMAL
+        )
 
 
 def test_key_gen():
@@ -76,6 +86,16 @@ def test_key_gen():
     print(key_pair.get_public_key().get_key())
 
     key_pair = key_pair_generator.generate_key_pair(Algorithm.RSA, 2048)
+    print(key_pair.get_private_key().get_key())
+    print(key_pair.get_public_key().get_key())
+
+    key_pair_generator = KeyPairGenerator()
+    key_pair = key_pair_generator.generate_key_pair(Algorithm.ELGAMAL, 1024)
+    print(key_pair.get_private_key().get_key())
+    print(key_pair.get_public_key().get_key())
+
+    key_pair_generator = KeyPairGenerator()
+    key_pair = key_pair_generator.generate_key_pair(Algorithm.ELGAMAL, 2048)
     print(key_pair.get_private_key().get_key())
     print(key_pair.get_public_key().get_key())
 
