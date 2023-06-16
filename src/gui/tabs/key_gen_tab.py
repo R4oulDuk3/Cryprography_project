@@ -5,7 +5,7 @@ from tkinter.font import Font
 from src.gui.tabs.initial_login_tab import gui_start
 from src.pgp.consts.consts import KEY_SIZES, ASYMMETRIC_ENCRYPTION_ALGORITHMS, AlgorithmType, Algorithm
 from src.pgp.key.key import KeyPair
-from src.pgp.key.key_serializer import KeySerializer, conclude_pem_algorithm
+from src.pgp.key.key_serializer import KeySerializer, conclude_asymmetric_algorithm_from_pem
 from src.pgp.key.manager import KeyManager
 from src.pgp.user.user import User
 
