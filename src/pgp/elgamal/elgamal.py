@@ -101,6 +101,8 @@ class PublicKey(object):
         self.h = h
         self.iNumBits = iNumBits
 
+# TODO: Implement to pem/ from pem methods for both public and private keys
+# TODO: Implement serialization of keys to bytes and from bytes to keys
 
 # computes the greatest common denominator of a and b.  assumes a > b
 def gcd(a, b):

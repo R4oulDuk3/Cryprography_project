@@ -4,8 +4,7 @@ from src.pgp.consts.consts import Algorithm, \
     KeyPairPrivateRingAttributes, UTF_8, PRIVATE_KEY_RING_SALT, PublicKeyPublicRingAttributes
 from src.pgp.encryption.symmetric import SymmetricEncryptor
 from src.pgp.hash.hash import SHA1Hasher
-from src.pgp.key.key import PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey
-from src.pgp.key.key_id import made_key_id
+from src.pgp.key.key import PublicKey, RSAPrivateKey, RSAPublicKey, KeyPair, CAST128SessionKey, made_key_id
 from src.pgp.key.key_serializer import KeySerializer
 
 

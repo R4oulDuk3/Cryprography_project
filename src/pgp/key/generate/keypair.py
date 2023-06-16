@@ -13,8 +13,9 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.number import getPrime
 
 from src.pgp.consts.consts import Algorithm, KEY_SIZES
-from src.pgp.key.key import KeyPair, RSAPublicKey, RSAPrivateKey, DSAPrivateKey, DSAPublicKey
-from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, PublicKey, PrivateKey, ElGamalPublicKey, ElGamalPrivateKey
+from src.pgp.key.key import KeyPair, DSAPrivateKey, DSAPublicKey
+from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, ElGamalPublicKey, ElGamalPrivateKey
+
 
 class KeyPairGenerator:
 
@@ -65,7 +66,7 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
         )
 
 
-# Note: Ovaj moze da se koristi za enkripciju
+# TODO: Replace with our library
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
         p = getPrime(key_size)

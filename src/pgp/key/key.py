@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import rsa
 from Crypto.PublicKey import DSA
 
-from src.pgp.consts.consts import KeyType, Algorithm
+from src.pgp.consts.consts import KeyType, Algorithm, KEY_ID_LENGTH
 
 
 class Key(ABC):
@@ -59,7 +59,7 @@ class TripleDESSessionKey(SessionKey):
     def get_key(self) -> bytes:
         return self._key
 
-
+# TODO: REPLACE WITH ELGAMAL LIB
 class ElGamalPublicKey(PublicKey):
     def __init__(self, p, g, y):
         super().__init__((p, g, y), Algorithm.ELGAMAL)
@@ -140,3 +140,6 @@ class DSAPrivateKey(PrivateKey):
     def get_key(self) -> DSA.DsaKey:
         return self._key
 
+
+def made_key_id(key_bytes: bytes) -> str:
+    return key_bytes[-KEY_ID_LENGTH:].hex()
