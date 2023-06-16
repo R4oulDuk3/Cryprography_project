@@ -117,7 +117,7 @@ class RSAPublicKey(PublicKey):
         return self._key
 
 
-class DSAPublicKey(PrivateKey):
+class DSAPublicKey(PublicKey):
     def __init__(self, key: DSA.DsaKey):
         if not isinstance(key, DSA.DsaKey):
             raise TypeError("key must be of type DSA.DsaKey")
