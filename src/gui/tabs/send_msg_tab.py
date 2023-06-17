@@ -47,6 +47,8 @@ def send_message_callback(user: User,
         else:
             symmetric_algo = Algorithm(symmetric_algo)
         print(f"|{password}|", len(password))
+        msg_name = f"{from_email}_{to_email}_{random.randint(0, 10000)}.pgp"
+        message_path = f"{directory}/{msg_name}"
         pgp_message: PGPMessage = user.sender.prepare_message_with_mails(plaintext=message,
                                                                          sender_mail=from_email,
                                                                          receiver_mail=to_email,
@@ -56,10 +58,8 @@ def send_message_callback(user: User,
                                                                          encrypt=encrypt,
                                                                          compress=compress,
                                                                          )
-        user.sender.send_message(pgp_message=pgp_message,
-                                 convert=convert,
-                                 message_path=f"{directory}/{from_email}_{to_email}_{random.randint(0, 10000)}.pgp")
-        result_label.config(text="Message sent successfully", foreground="green")
+        user.sender.send_message(pgp_message=pgp_message, convert=convert, message_path=message_path)
+        result_label.config(text=f"Message {msg_name} sent successfully!", foreground="green")
     except Exception as e:
         print(f"Error while sending message: {e}")
         result_label.config(text=f"Error while sending message: {e}", foreground="red")
