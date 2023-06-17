@@ -1,10 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter.font import Font
-
-from src.gui.tabs.initial_login_tab import gui_start
+from datetime import datetime
 from src.pgp.consts.consts import KEY_SIZES, ASYMMETRIC_ENCRYPTION_ALGORITHMS, AlgorithmType, Algorithm
-from src.pgp.key.key import KeyPair
 from src.pgp.key.key_serializer import KeySerializer, conclude_asymmetric_algorithm_from_pem
 from src.pgp.key.manager import KeyManager
 from src.pgp.user.user import User
@@ -29,25 +27,31 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
             email=email,
             algorithm_type=key_type
         )
-        generate_result_label.config(text="Keys generated successfully!", foreground="green")
+        generated_key_type = "Encryption" if key_type == AlgorithmType.ASYMMETRIC_ENCRYPTION else "Signature"
+        generated_key_algorithm = "RSA" if asym_algo == Algorithm.RSA else "ElGamal"
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        generate_result_label.config(
+            text=f"Successfully generated {generated_key_type} keys with {generated_key_algorithm} algorithm. TS({timestamp})!",
+            foreground="green"
+        )
         update_email_list(user, export_email_selection_combo)
     except Exception as e:
         print(f"Error while generating keys: {e}")
         generate_result_label.config(text=f"Error while generating keys: {e}", foreground="red")
 
 
-def update_email_list(user, export_email_selection_combo):
+def update_email_list(user, export_email_selection_combo: ttk.Combobox):
     emails = user.key_manager.get_all_private_keyring_mails()
     export_email_selection_combo['values'] = emails
 
 
 def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_private: str, path_public: str,
-                         email: str, password: str, key_type: str):
+                         email: str, password: str, key_type: str, export_email_selection_combo: ttk.Combobox):
     if path_private == "" or path_public == "":
         import_keys_result_label.config(text="No location selected!", foreground="black")
         return
     try:
-        key_manager = KeyManager(user.user_name)
+        key_manager = user.key_manager
         key_type = AlgorithmType.ASYMMETRIC_ENCRYPTION if key_type == "Encryption" \
             else AlgorithmType.SIGNING if key_type == "Signature" else None
         key_manager.import_key_pair_from_pem(
@@ -57,7 +61,12 @@ def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_p
             password=password,
             algorithm_type=key_type
         )
-        import_keys_result_label.config(text="Successfully loaded keys!", foreground="green")
+        update_email_list(user, export_email_selection_combo)
+        generated_key_type = "Encryption" if key_type == AlgorithmType.ASYMMETRIC_ENCRYPTION else "Signature"
+        import_keys_result_label.config(
+            text=f"Successfully imported {generated_key_type} keys for email: {email}!",
+            foreground="green"
+        )
     except Exception as e:
         print(f"Error while exporting message: {e}")
         import_keys_result_label.config(text=f"Error while importing key: {e}", foreground="red")
@@ -82,7 +91,7 @@ def export_keys_callback(user: User, export_keys_result_label: ttk.Label, path: 
             key_pair=key_pair,
             public_key_pem_path=path + "/public_key_" + user.user_name + "_" + key_type + "_" + email + ".pem"
         )
-        export_keys_result_label.config(text="Successfully exported public and private keys!", foreground="green")
+        export_keys_result_label.config(text=f"Successfully exported public and private keys for {user.user_name} ({email})!", foreground="green")
     except Exception as e:
         print(f"Error while exporting keys: {e}")
         export_keys_result_label.config(text=f"Error while exporting keys: {e}", foreground="red")
@@ -252,7 +261,8 @@ def keyg_tab_gen(notebook, user, logout_callback):
             path_private=import_private_key_entry.get(),
             email=import_keys_email_entry.get(),
             password=import_keys_password_entry.get(),
-            key_type=import_key_type_combo.get()
+            key_type=import_key_type_combo.get(),
+            export_email_selection_combo=export_email_selection_combo,
         )
     )
 
