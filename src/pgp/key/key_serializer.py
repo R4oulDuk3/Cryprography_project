@@ -3,9 +3,9 @@ import rsa
 from src.pgp.consts.consts import UTF_8, Algorithm
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import KeyPair, RSAPublicKey, PrivateKey, RSAPrivateKey, PublicKey, SessionKey, CAST128SessionKey, \
-    TripleDESSessionKey, DSAPublicKey, DSAPrivateKey
+    TripleDESSessionKey, DSAPublicKey, DSAPrivateKey, ElGamalPrivateKey, ElGamalPublicKey
 from Crypto.PublicKey import DSA
-
+import src.pgp.elgamal.elgamal as elgamal
 
 # TODO: ADD ELGAMAL to conclude_asymmetric_algorithm_from_pem
 
@@ -16,6 +16,8 @@ def conclude_asymmetric_algorithm_from_pem(key_pem: str) -> Algorithm:
     # so we if there is no specification, we assume it is DSA
     elif "-----BEGIN PRIVATE KEY-----" in key_pem or "-----BEGIN PUBLIC KEY-----" in key_pem:
         return Algorithm.DSA
+    elif "ELGAMAL" in key_pem:
+        return Algorithm.ELGAMAL
     else:
         raise ValueError("Invalid algorithm")
 
@@ -26,11 +28,13 @@ class KeySerializer:
         with open(private_key_pem_path, 'r') as f:
             private_key_pem = f.read()
         algorithm = conclude_asymmetric_algorithm_from_pem(key_pem=private_key_pem)
-        # TODO: Implement ElGamal
+
         if algorithm == Algorithm.RSA:
             return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(private_key_pem.encode(UTF_8)))
-        if algorithm == Algorithm.DSA:
+        elif algorithm == Algorithm.DSA:
             return DSAPrivateKey(DSA.import_key(private_key_pem.encode(UTF_8)))
+        elif algorithm == Algorithm.ELGAMAL:
+            return ElGamalPrivateKey(elgamal.PrivateKey.from_pem(private_key_pem))
         else:
             raise NotImplementedError()
 
@@ -39,16 +43,16 @@ class KeySerializer:
             public_key_pem = f.read()
         print(public_key_pem)
         algorithm = conclude_asymmetric_algorithm_from_pem(key_pem=public_key_pem)
-        # TODO: Implement ElGamal
         if algorithm == Algorithm.RSA:
             return RSAPublicKey(rsa.PublicKey.load_pkcs1(public_key_pem.encode(UTF_8)))
-        if algorithm == Algorithm.DSA:
+        elif algorithm == Algorithm.DSA:
             return DSAPublicKey(DSA.import_key(public_key_pem.encode(UTF_8)))
+        elif algorithm == Algorithm.ELGAMAL:
+            return ElGamalPublicKey(elgamal.PublicKey.from_pem(public_key_pem))
         else:
             raise NotImplementedError()
 
     def export_private_key_to_pem(self, key_pair: KeyPair, private_key_pem_path: str):
-        # TODO: Implement ElGamal
         print(key_pair.get_algorithm())
         if key_pair.get_algorithm() == Algorithm.RSA:
             with open(private_key_pem_path, 'w') as f:
@@ -56,35 +60,42 @@ class KeySerializer:
         elif key_pair.get_algorithm() == Algorithm.DSA:
             with open(private_key_pem_path, 'w') as f:
                 f.write(key_pair.get_private_key().get_key().export_key().decode(UTF_8))
+        elif key_pair.get_algorithm() == Algorithm.ELGAMAL:
+            with open(private_key_pem_path, 'w') as f:
+                f.write(key_pair.get_private_key().get_key().to_pem())
         else:
             raise NotImplementedError()
 
     def export_public_key_to_pem(self, key_pair: KeyPair, public_key_pem_path: str):
-        # TODO: Implement ElGamal
         if key_pair.get_algorithm() == Algorithm.RSA:
             with open(public_key_pem_path, 'w') as f:
                 f.write(key_pair.get_public_key().get_key().save_pkcs1().decode(UTF_8))
         elif key_pair.get_algorithm() == Algorithm.DSA:
             with open(public_key_pem_path, 'w') as f:
                 f.write(key_pair.get_public_key().get_key().export_key().decode(UTF_8))
+        elif key_pair.get_algorithm() == Algorithm.ELGAMAL:
+            with open(public_key_pem_path, 'w') as f:
+                f.write(key_pair.get_public_key().get_key().to_pem())
         else:
             raise NotImplementedError()
 
     def public_key_to_bytes(self, key: PublicKey) -> bytes:
-        # TODO: Implement ElGamal
         if isinstance(key, RSAPublicKey):
             return key.get_key().save_pkcs1()
         elif isinstance(key, DSAPublicKey):
             return key.get_key().export_key()
+        elif isinstance(key, ElGamalPublicKey):
+            return key.get_key().to_bytes()
         else:
             raise NotImplementedError()
 
     def private_key_to_bytes(self, key: PrivateKey) -> bytes:
-        # TODO: Implement ElGamal
         if isinstance(key, RSAPrivateKey):
             return key.get_key().save_pkcs1()
         elif isinstance(key, DSAPrivateKey):
             return key.get_key().export_key()
+        elif isinstance(key, ElGamalPrivateKey):
+            return key.get_key().to_bytes()
         else:
             raise NotImplementedError()
 
@@ -97,20 +108,22 @@ class KeySerializer:
             raise NotImplementedError()
 
     def bytes_to_public_key(self, key_bytes: bytes, algorithm: Algorithm) -> PublicKey:
-        # TODO: Implement ElGamal
         if algorithm == Algorithm.RSA:
             return RSAPublicKey(rsa.PublicKey.load_pkcs1(key_bytes))
-        if algorithm == Algorithm.DSA:
+        elif algorithm == Algorithm.DSA:
             return DSAPublicKey(DSA.import_key(key_bytes))
+        elif algorithm == Algorithm.ELGAMAL:
+            return ElGamalPublicKey(elgamal.PublicKey.from_bytes(key_bytes))
         else:
             raise NotImplementedError()
 
     def bytes_to_private_key(self, key_bytes: bytes, algorithm: Algorithm) -> PrivateKey:
-        # TODO: Implement ElGamal
         if algorithm == Algorithm.RSA:
             return RSAPrivateKey(rsa.PrivateKey.load_pkcs1(key_bytes))
         elif algorithm == Algorithm.DSA:
             return DSAPrivateKey(DSA.import_key(key_bytes))
+        elif algorithm == Algorithm.ELGAMAL:
+            return ElGamalPrivateKey(elgamal.PrivateKey.from_bytes(key_bytes))
         else:
             raise NotImplementedError()
 
@@ -144,6 +157,17 @@ def test_key_serializer():
     print(public_key)
     assert private_key.get_key().export_key() == key_pair.get_private_key().get_key().export_key()
     assert public_key.get_key().export_key() == key_pair.get_public_key().get_key().export_key()
+    print("KeySerializer test passed for DSA")
+    key_pair = KeyPairGenerator().generate_key_pair(algorithm=Algorithm.ELGAMAL, key_size=2048)
+    key_serializer.export_private_key_to_pem(key_pair=key_pair, private_key_pem_path="private_key.pem")
+    key_serializer.export_public_key_to_pem(key_pair=key_pair, public_key_pem_path="public_key.pem")
+    private_key = key_serializer.import_private_key_from_pem(private_key_pem_path="private_key.pem")
+    public_key = key_serializer.import_public_key_from_pem(public_key_pem_path="public_key.pem")
+    print(private_key)
+    print(public_key)
+    assert private_key.get_key().to_bytes() == key_pair.get_private_key().get_key().to_bytes()
+    assert public_key.get_key().to_bytes() == key_pair.get_public_key().get_key().to_bytes()
+    print("KeySerializer test passed for ElGamal")
 
 
 if __name__ == "__main__":

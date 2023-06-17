@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Union
-from src.pgp.consts.consts import Algorithm, UTF_8
-import rsa
-from Crypto.PublicKey import DSA
-from Crypto.Signature import DSS
-from Crypto.Hash import SHA1
 
+import rsa
+from Crypto.Hash import SHA1
+from Crypto.Signature import DSS
+
+from src.pgp.consts.consts import Algorithm, UTF_8
 from src.pgp.key.generate.keypair import KeyPairGenerator
 from src.pgp.key.key import RSAPrivateKey, RSAPublicKey, DSAPrivateKey, DSAPublicKey, PrivateKey, PublicKey
 

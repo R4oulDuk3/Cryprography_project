@@ -79,11 +79,20 @@
 # and get the message I had started with.  But I did not receive the right message when I encrypted and
 # decrypted it, despite having checked my encrypt and decrypt modules many times.  I fixed this by raising
 # s to p-2 instead of -1 in the decryption function.
-
-
+import base64
+import json
 import random
 import math
 import sys
+import rsa
+from Crypto.Util import number
+
+def pem_it(s, name):
+    return f"-----BEGIN {name}-----\n{s}\n-----END {name}-----\n"
+
+
+def depem_it(s, name):
+    return s.replace(f"-----BEGIN {name}-----\n", '').replace(f"\n-----END {name}-----\n", '')
 
 
 class PrivateKey(object):
@@ -93,6 +102,30 @@ class PrivateKey(object):
         self.x = x
         self.iNumBits = iNumBits
 
+    def to_bytes(self):
+        d = {'p': self.p, 'g': self.g, 'x': self.x, 'iNumBits': self.iNumBits}
+        j = json.dumps(d)
+        return j.encode()
+
+    @classmethod
+    def from_bytes(cls, bytes_data):
+        j = bytes_data.decode()
+        d = json.loads(j)
+        return cls(d['p'], d['g'], d['x'], d['iNumBits'])
+
+    def to_pem(self):
+        d = {'p': self.p, 'g': self.g, 'x': self.x, 'iNumBits': self.iNumBits}
+        j = json.dumps(d)
+        b64 = base64.b64encode(j.encode()).decode()
+        return pem_it(b64, 'ELGAMAL PRIVATE KEY')
+
+    @classmethod
+    def from_pem(cls, pem_string):
+        b64 = depem_it(pem_string, 'ELGAMAL PRIVATE KEY')
+        j = base64.b64decode(b64).decode()
+        d = json.loads(j)
+        return cls(d['p'], d['g'], d['x'], d['iNumBits'])
+
 
 class PublicKey(object):
     def __init__(self, p=None, g=None, h=None, iNumBits=0):
@@ -101,7 +134,31 @@ class PublicKey(object):
         self.h = h
         self.iNumBits = iNumBits
 
-# TODO: Implement to pem/ from pem methods for both public and private keys
+    def to_bytes(self):
+        d = {'p': self.p, 'g': self.g, 'h': self.h, 'iNumBits': self.iNumBits}
+        j = json.dumps(d)
+        return j.encode()
+
+    @classmethod
+    def from_bytes(cls, bytes_data):
+        j = bytes_data.decode()
+        d = json.loads(j)
+        return cls(d['p'], d['g'], d['h'], d['iNumBits'])
+
+    def to_pem(self):
+        d = {'p': self.p, 'g': self.g, 'h': self.h, 'iNumBits': self.iNumBits}
+        j = json.dumps(d)
+        b64 = base64.b64encode(j.encode()).decode()
+        return pem_it(b64, 'ELGAMAL PUBLIC KEY')
+
+    @classmethod
+    def from_pem(cls, pem_string):
+        b64 = depem_it(pem_string, 'ELGAMAL PUBLIC KEY')
+        j = base64.b64decode(b64).decode()
+        d = json.loads(j)
+        return cls(d['p'], d['g'], d['h'], d['iNumBits'])
+
+
 # TODO: Implement serialization of keys to bytes and from bytes to keys
 
 # computes the greatest common denominator of a and b.  assumes a > b
@@ -308,7 +365,8 @@ def generate_keys(iNumBits=256, iConfidence=32):
     # g is the primitve root
     # x is random in (0, p-1) inclusive
     # h = g ^ x mod p
-    p = find_prime(iNumBits, iConfidence)
+
+    p = number.getPrime(iNumBits)
     g = find_primitive_root(p)
     g = modexp(g, 2, p)
     x = random.randint(1, (p - 1) // 2)
@@ -376,12 +434,20 @@ def decrypt(key, cipher):
 
 def test():
     assert (sys.version_info >= (3, 4))
-    keys = generate_keys()
+    keys = generate_keys(1024)
     priv = keys['privateKey']
     pub = keys['publicKey']
     message = "My name is Ryan.  Here is some french text:  Maître Corbeau, sur un arbre perché.  Now some Chinese: 鋈 晛桼桾 枲柊氠 藶藽 歾炂盵 犈犆犅 壾, 軹軦軵 寁崏庲 摮 蟼襛 蝩覤 蜭蜸覟 駽髾髽 忷扴汥 "
     cipher = encrypt(pub, message)
     plain = decrypt(priv, cipher)
+    print(priv.to_pem())
+    print(pub.to_pem())
+    priv_to_bytes = priv.to_bytes()
+    pub_to_bytes = pub.to_bytes()
+    priv_from_bytes = PrivateKey.from_bytes(priv_to_bytes)
+    pub_from_bytes = PublicKey.from_bytes(pub_to_bytes)
+    assert (priv_to_bytes == priv_from_bytes.to_bytes())
+    assert (pub_to_bytes == pub_from_bytes.to_bytes())
 
     return message == plain
 
