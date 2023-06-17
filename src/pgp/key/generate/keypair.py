@@ -9,9 +9,8 @@ from abc import abstractmethod, ABC
 
 import rsa
 from Crypto.PublicKey import DSA
-from Crypto.Random import get_random_bytes
-from Crypto.Util.number import getPrime
 
+import src.pgp.elgamal.elgamal as elgamal
 from src.pgp.consts.consts import Algorithm, KEY_SIZES
 from src.pgp.key.key import KeyPair, DSAPrivateKey, DSAPublicKey
 from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, ElGamalPublicKey, ElGamalPrivateKey
@@ -66,16 +65,12 @@ class KeyPairGeneratorStrategyDSA(KeyPairGeneratorStrategy):
         )
 
 
-# TODO: Replace with our library
 class KeyPairGeneratorStrategyElGamal(KeyPairGeneratorStrategy):
     def generate_key_pair(self, key_size) -> KeyPair:
-        p = getPrime(key_size)
-        g = 2
-        x = int.from_bytes(get_random_bytes(64), byteorder='big')
-        y = pow(g, x, p)
+        key_pair_dict = elgamal.generate_keys(key_size, 16)
         return KeyPair(
-            private_key=ElGamalPrivateKey(p, g, x),
-            public_key=ElGamalPublicKey(p, g, y),
+            private_key=ElGamalPrivateKey(key_pair_dict['privateKey']),
+            public_key=ElGamalPublicKey(key_pair_dict['publicKey']),
             algorithm=Algorithm.ELGAMAL
         )
 

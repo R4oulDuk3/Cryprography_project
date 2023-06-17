@@ -32,8 +32,10 @@ class KeyManager:
                           email: str,
                           password: str,
                           algorithm_type: AlgorithmType):
+        print(f"Generating key pair...{algorithm} {key_size} {email} {password} {algorithm_type}")
         key_pair: KeyPair = self._key_pair_generator.generate_key_pair(algorithm=algorithm,
                                                                        key_size=key_size)
+        print(f"Storing keys...{key_pair.get_public_key().get_algorithm()}")
         self._public_key_ring.add_public_key(public_key=key_pair.get_public_key(),
                                              user_email=email,
                                              algorithm_type=algorithm_type)

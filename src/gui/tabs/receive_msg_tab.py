@@ -12,7 +12,7 @@ from src.pgp.signature.sign import Signer
 from src.pgp.transfer.receiver import Receiver
 from src.pgp.user.user import User
 
-
+import traceback
 path_to_message = ""
 
 
@@ -41,6 +41,7 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
         message_content_label.config(text="Message:\t" + plaintext, foreground="black")
     except Exception as e:
         print(f"Error while receiving message: {e}")
+        print(traceback.format_exc())
         message_content_label.config(text=f"Error while receiving message: {e}", foreground="red")
 
 
