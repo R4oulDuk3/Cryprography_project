@@ -137,8 +137,10 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     encrypt_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
     encrypt_var = tk.BooleanVar()
     encrypt_var.set(False)
-    encrypt_checkbox = ttk.Checkbutton(send_msg_tab, variable=encrypt_var, command=lambda:
-    set_symmetric_algo_combo_state(encrypt_var.get()))
+    encrypt_checkbox = ttk.Checkbutton(
+        send_msg_tab, variable=encrypt_var,
+        command=lambda: set_symmetric_algo_combo_state(encrypt_var.get())
+    )
     encrypt_checkbox.grid(row=3, column=1, padx=12, pady=4)
 
     def set_password_entry_state(enabled: bool):
