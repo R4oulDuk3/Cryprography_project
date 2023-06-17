@@ -11,7 +11,7 @@ from src.pgp.user.user import User
 
 
 def generate_keypair_callback(user: User, generate_result_label: ttk.Label, email: str, key_type: str, asym_algo: str,
-                              key_size: int, password: str):
+                              key_size: int, password: str, export_email_selection_combo: ttk.Combobox):
     if email == "":
         generate_result_label.config(text="Email input box is empty.", foreground="black")
         return
@@ -30,9 +30,15 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
             algorithm_type=key_type
         )
         generate_result_label.config(text="Keys generated successfully!", foreground="green")
+        update_email_list(user, export_email_selection_combo)
     except Exception as e:
         print(f"Error while generating keys: {e}")
         generate_result_label.config(text=f"Error while generating keys: {e}", foreground="red")
+
+
+def update_email_list(user, export_email_selection_combo):
+    emails = user.key_manager.get_all_private_keyring_mails()
+    export_email_selection_combo['values'] = emails
 
 
 def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_private: str, path_public: str,
@@ -120,31 +126,27 @@ def keyg_tab_gen(notebook, user, logout_callback):
     key_gen_tab = ttk.Frame(notebook)
     notebook.add(key_gen_tab, text="Key Generation")
 
-    # Create a canvas
     canvas = tk.Canvas(key_gen_tab)
     scrollbar = ttk.Scrollbar(key_gen_tab, orient="vertical", command=canvas.yview)
     scrollable_frame = ttk.Frame(canvas)
 
-    # Generate a new key pair label
+    # GENERATE NEW KEY PAIR
     header_font = Font(size=15, weight="bold")
     generate_label = ttk.Label(scrollable_frame, text="Generate a new key pair:", font=header_font)
     generate_label.grid(row=0, column=0, columnspan=2, padx=10, pady=10)
 
-    # Email label and entry
     email_label = ttk.Label(scrollable_frame, text="Email:")
     email_label.grid(row=1, column=0, padx=12, pady=4, sticky=tk.W)
     email_entry = ttk.Entry(scrollable_frame)
     email_entry.grid(row=1, column=1, padx=12, pady=4)
     email_entry.config(width=23)
 
-    # Key Type label and combo box
     key_type_label = ttk.Label(scrollable_frame, text="Key Type:")
     key_type_label.grid(row=2, column=0, padx=12, pady=4, sticky=tk.W)
     key_type_combo = ttk.Combobox(scrollable_frame, values=["Encryption", "Signature"], state="readonly")
     key_type_combo.grid(row=2, column=1, padx=12, pady=4)
     key_type_combo.current(0)
 
-    # Algorithm label and combo box
     asym_algo_label = ttk.Label(scrollable_frame, text="Asymmetric algorithm")
     asym_algo_label.grid(row=3, column=0, padx=12, pady=4, sticky=tk.W)
     asym_algo_combo = ttk.Combobox(
@@ -156,109 +158,90 @@ def keyg_tab_gen(notebook, user, logout_callback):
     asym_algo_combo.current(0)
     asym_algo_combo.bind("<<ComboboxSelected>>", lambda event: update_signature_label(asym_algo_combo, signature_label))
 
-    # Signature label
     signature_type_label = ttk.Label(scrollable_frame, text="Signature type:")
     signature_type_label.grid(row=4, column=0, padx=12, pady=4, sticky=tk.W)
     signature_label = ttk.Label(scrollable_frame, text="")
     signature_label.grid(row=4, column=1, padx=12, pady=4, sticky=tk.W)
     update_signature_label(asym_algo_combo, signature_label)
 
-    # Key Size label and combo box
     key_size_label = ttk.Label(scrollable_frame, text="Key Size:")
     key_size_label.grid(row=5, column=0, padx=12, pady=4, sticky=tk.W)
     key_size_combo = ttk.Combobox(scrollable_frame, values=KEY_SIZES, state="readonly")
     key_size_combo.grid(row=5, column=1, padx=12, pady=4)
     key_size_combo.current(0)
 
-    # Password label and entry
-    ttk.Label(scrollable_frame, text="Password:").grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
+    generate_key_pair_password_label = ttk.Label(scrollable_frame, text="Password:")
+    generate_key_pair_password_label.grid(row=6, column=0, padx=12, pady=4, sticky=tk.W)
     password_entry = ttk.Entry(scrollable_frame, show="*")
     password_entry.grid(row=6, column=1, padx=12, pady=4)
     password_entry.config(width=23)
-    ttk.Label(scrollable_frame).grid(row=7)
 
-    # Generate result label
     generate_result_label = ttk.Label(scrollable_frame, text="", wraplength=320)
     generate_result_label.grid(row=8, column=0, columnspan=2)
 
-    # Generate Keys button
     generate_btn = ttk.Button(scrollable_frame, text="Generate Keys")
     generate_btn.grid(row=9, column=0, columnspan=2, padx=10, pady=10)
     generate_btn.bind(
         "<Button-1>", lambda event: generate_keypair_callback(
-            user,
-            generate_result_label,
+            user=user,
+            generate_result_label=generate_result_label,
             email=email_entry.get(),
             key_type=key_type_combo.get(),
             asym_algo=asym_algo_combo.get(),
             key_size=int(key_size_combo.get()),
-            password=password_entry.get()
+            password=password_entry.get(),
+            export_email_selection_combo=export_email_selection_combo,
         )
     )
 
-    # Separator
     separator1 = ttk.Separator(scrollable_frame, orient="horizontal")
     separator1.grid(row=10, column=0, columnspan=3, padx=0, pady=10, sticky="we")
 
-    # Import keys label
+    # IMPORT KEYS
     import_keys_label = ttk.Label(scrollable_frame, text="Import keys:", font=header_font)
     import_keys_label.grid(row=11, column=0, columnspan=2, padx=10, pady=10)
 
-    # Key Entry for Import Public Key
     import_public_key_label = ttk.Label(scrollable_frame, text="Public key:")
     import_public_key_label.grid(row=12, column=0, padx=12, pady=4, sticky=tk.W)
     import_public_key_entry = ttk.Entry(scrollable_frame)
     import_public_key_entry.grid(row=12, column=1, padx=12, pady=4)
     import_public_key_entry.config(width=23)
 
-    # Browse button for Import Public Key
     browse_import_public_key_button = ttk.Button(scrollable_frame, text="Browse", command=browse_import_public_key)
     browse_import_public_key_button.grid(row=12, column=2, padx=4, pady=4)
 
-    # Key Entry for Import Private Key
     import_private_key_label = ttk.Label(scrollable_frame, text="Private key:")
     import_private_key_label.grid(row=13, column=0, padx=12, pady=4, sticky=tk.W)
     import_private_key_entry = ttk.Entry(scrollable_frame)
     import_private_key_entry.grid(row=13, column=1, padx=12, pady=4)
     import_private_key_entry.config(width=23)
 
-    # Browse button for Import Private Key
     browse_import_private_key_button = ttk.Button(scrollable_frame, text="Browse", command=browse_import_private_key)
     browse_import_private_key_button.grid(row=13, column=2, padx=4, pady=4)
 
-    # Email label for Import
     import_keys_email_label = ttk.Label(scrollable_frame, text="Email:")
     import_keys_email_label.grid(row=14, column=0, padx=12, pady=4, sticky=tk.W)
 
-    # Email entry for Import
     import_keys_email_entry = ttk.Entry(scrollable_frame)
     import_keys_email_entry.grid(row=14, column=1, padx=12, pady=4)
     import_keys_email_entry.config(width=23)
 
-    # Password label for Import
     import_keys_password_label = ttk.Label(scrollable_frame, text="Password:")
     import_keys_password_label.grid(row=15, column=0, padx=12, pady=4, sticky=tk.W)
-
-    # Password entry for Import
     import_keys_password_entry = ttk.Entry(scrollable_frame, show="*")
     import_keys_password_entry.grid(row=15, column=1, padx=12, pady=4)
     import_keys_password_entry.config(width=23)
 
-    # Key type label for Import
     import_key_type_label = ttk.Label(scrollable_frame, text="Key type:")
     import_key_type_label.grid(row=16, column=0, padx=12, pady=4, sticky=tk.W)
-
-    # Key type combobox for Import
     import_key_type_combo = ttk.Combobox(scrollable_frame, values=["Encryption", "Signature"], state="readonly")
     import_key_type_combo.grid(row=16, column=1, padx=12, pady=4)
     import_key_type_combo.config(width=21)
     import_key_type_combo.set("Encryption")
 
-    # Import keys result label
     import_keys_result_label = ttk.Label(scrollable_frame, text="", wraplength=320)
     import_keys_result_label.grid(row=17, column=0, columnspan=2)
 
-    # Import Keys button
     import_keys_button = ttk.Button(scrollable_frame, text="Import")
     import_keys_button.grid(row=18, column=0, columnspan=2, padx=10, pady=10)
     import_keys_button.bind(
@@ -273,39 +256,30 @@ def keyg_tab_gen(notebook, user, logout_callback):
         )
     )
 
-    # Separator
     separator2 = ttk.Separator(scrollable_frame, orient="horizontal")
     separator2.grid(row=19, column=0, columnspan=3, padx=0, pady=10, sticky="we")
 
-    # Export keys label
+    # EXPORT KEYS
     export_keys_label = ttk.Label(scrollable_frame, text="Export keys:", font=header_font)
     export_keys_label.grid(row=20, column=0, columnspan=2, padx=10, pady=10)
 
-    # Key Entry for Export
     export_key_label = ttk.Label(scrollable_frame, text="Export location:")
     export_key_label.grid(row=21, column=0, padx=12, pady=4, sticky=tk.W)
     export_key_entry = ttk.Entry(scrollable_frame)
     export_key_entry.grid(row=21, column=1, padx=12, pady=4)
     export_key_entry.config(width=23)
 
-    # Browse button for Export
     browse_export_key_button = ttk.Button(scrollable_frame, text="Browse", command=browse_export_key)
     browse_export_key_button.grid(row=21, column=2, padx=4, pady=4)
 
-    # Password label for Export
     export_password_label = ttk.Label(scrollable_frame, text="Password:")
     export_password_label.grid(row=22, column=0, padx=12, pady=4, sticky=tk.W)
-
-    # Password entry for Export
     export_password_entry = ttk.Entry(scrollable_frame, show="*")
     export_password_entry.grid(row=22, column=1, padx=12, pady=4)
     export_password_entry.config(width=23)
 
-    # Key selection label for Export
     export_email_selection_label = ttk.Label(scrollable_frame, text="Email:")
     export_email_selection_label.grid(row=23, column=0, padx=12, pady=4, sticky=tk.W)
-
-    # Key selection combobox for Export
     export_email_selection_combo = ttk.Combobox(
         scrollable_frame,
         values=user.key_manager.get_all_private_keyring_mails(),
@@ -314,21 +288,15 @@ def keyg_tab_gen(notebook, user, logout_callback):
     export_email_selection_combo.grid(row=23, column=1, padx=12, pady=4)
     export_email_selection_combo.config(width=21)
 
-    # Key type label for Export
     export_key_type_label = ttk.Label(scrollable_frame, text="Key type:")
     export_key_type_label.grid(row=24, column=0, padx=12, pady=4, sticky=tk.W)
-
-    # Key type combobox for Export
     export_key_type_combo = ttk.Combobox(scrollable_frame, values=["Encryption", "Signature"], state="readonly")
     export_key_type_combo.grid(row=24, column=1, padx=12, pady=4)
     export_key_type_combo.config(width=21)
     export_key_type_combo.set("Encryption")
 
-    # Export keys result label
     export_keys_result_label = ttk.Label(scrollable_frame, text="", wraplength=320)
     export_keys_result_label.grid(row=25, column=0, columnspan=2)
-
-    # Export Keys button
     export_keys_button = ttk.Button(scrollable_frame, text="Export")
     export_keys_button.grid(row=26, column=0, columnspan=2, padx=10, pady=10)
     export_keys_button.bind(
@@ -342,7 +310,6 @@ def keyg_tab_gen(notebook, user, logout_callback):
         )
     )
 
-    # Logout
     logout_separator = ttk.Separator(scrollable_frame, orient="horizontal")
     logout_separator.grid(row=27, column=0, columnspan=3, padx=0, pady=10, sticky="we")
     username_label = ttk.Label(scrollable_frame, text=f"Current user: {user.user_name}")
@@ -350,7 +317,6 @@ def keyg_tab_gen(notebook, user, logout_callback):
     logout_btn = ttk.Button(scrollable_frame, text="Logout", command=logout_callback)
     logout_btn.grid(row=29, column=0, padx=12, pady=4, sticky=tk.W)
 
-    # Scrollbar
     scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
