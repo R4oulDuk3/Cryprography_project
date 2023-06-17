@@ -44,13 +44,13 @@ class SecretKeyRingSerializer:
         return KeyPair(
             public_key=self._key_serializer.bytes_to_public_key(
                 key_bytes=bytes.fromhex(key_json[KeyPairPrivateRingAttributes.PUBLIC_KEY.value]),
-                algorithm=Algorithm[key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
+                algorithm=Algorithm(key_json[KeyPairPrivateRingAttributes.ALGORITHM.value])
             ),
             private_key=self._key_serializer.bytes_to_private_key(
                 key_bytes=private_key,
-                algorithm=Algorithm[key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
+                algorithm=Algorithm(key_json[KeyPairPrivateRingAttributes.ALGORITHM.value])
             ),
-            algorithm=Algorithm[key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
+            algorithm=Algorithm(key_json[KeyPairPrivateRingAttributes.ALGORITHM.value])
         )
 
     def key_pair_json_serialize(self, key_pair: KeyPair, password: str, user_name: str, user_email: str):
@@ -86,16 +86,17 @@ class PublicKeyRingSerializer:
     def public_key_json_deserialize(self, public_key_json: dict) -> PublicKey:
         if PublicKeyPublicRingAttributes.ALGORITHM.value not in public_key_json:
             raise ValueError("Algorithm is missing from key_json")
+        print(f"Algorithm: {public_key_json[PublicKeyPublicRingAttributes.ALGORITHM.value]}")
         return self._key_serializer.bytes_to_public_key(
             key_bytes=bytes.fromhex(public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value]),
-            algorithm=Algorithm[public_key_json[KeyPairPrivateRingAttributes.ALGORITHM.value]]
+            algorithm=Algorithm(public_key_json[PublicKeyPublicRingAttributes.ALGORITHM.value])
         )
 
     def public_key_json_serialize(self, public_key: PublicKey, user_email, user_name) -> dict:
         public_key_bytes: bytes = self._key_serializer.public_key_to_bytes(key=public_key)
         return {
             PublicKeyPublicRingAttributes.PUBLIC_KEY.value: public_key_bytes.hex(),
-            PublicKeyPublicRingAttributes.ALGORITHM.value: Algorithm.RSA.value,
+            PublicKeyPublicRingAttributes.ALGORITHM.value: public_key.get_algorithm().value,
             PublicKeyPublicRingAttributes.USER_NAME.value: user_name,
             PublicKeyPublicRingAttributes.USER_EMAIL.value: user_email,
             PublicKeyPublicRingAttributes.KEY_ID.value: made_key_id(key_bytes=public_key_bytes)

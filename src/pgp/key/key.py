@@ -4,6 +4,7 @@ import rsa
 from Crypto.PublicKey import DSA
 
 from src.pgp.consts.consts import KeyType, Algorithm, KEY_ID_LENGTH
+import src.pgp.elgamal.elgamal as elgamal
 
 
 class Key(ABC):
@@ -58,22 +59,6 @@ class TripleDESSessionKey(SessionKey):
 
     def get_key(self) -> bytes:
         return self._key
-
-# TODO: REPLACE WITH ELGAMAL LIB
-class ElGamalPublicKey(PublicKey):
-    def __init__(self, p, g, y):
-        super().__init__((p, g, y), Algorithm.ELGAMAL)
-
-    def get_key(self):
-        return self._key  # returns (p, g, y)
-
-
-class ElGamalPrivateKey(PrivateKey):
-    def __init__(self, p, g, x):
-        super().__init__((p, g, x), Algorithm.ELGAMAL)
-
-    def get_key(self):
-        return self._key  # returns (p, g, x)
 
 
 class KeyPair:
@@ -138,6 +123,22 @@ class DSAPrivateKey(PrivateKey):
         super().__init__(key, Algorithm.DSA)
 
     def get_key(self) -> DSA.DsaKey:
+        return self._key
+
+
+class ElGamalPublicKey(PublicKey):
+    def __init__(self, key: elgamal.PublicKey):
+        super().__init__(key, Algorithm.ELGAMAL)
+
+    def get_key(self) -> elgamal.PublicKey:
+        return self._key
+
+
+class ElGamalPrivateKey(PrivateKey):
+    def __init__(self, key: elgamal.PrivateKey):
+        super().__init__(key, Algorithm.ELGAMAL)
+
+    def get_key(self) -> elgamal.PrivateKey:
         return self._key
 
 

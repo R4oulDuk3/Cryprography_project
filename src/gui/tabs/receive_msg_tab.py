@@ -11,9 +11,14 @@ from src.pgp.message.message import PGPMessage
 from src.pgp.signature.sign import Signer
 from src.pgp.transfer.receiver import Receiver
 from src.pgp.user.user import User
+
+
+import traceback
+
 import os
 import random
 import string
+
 
 path_to_message = ""
 plaintext = ""
@@ -45,6 +50,7 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
         export_folder_entry.config(state="normal")
     except Exception as e:
         print(f"Error while receiving message: {e}")
+        print(traceback.format_exc())
         message_content_label.config(text=f"Error while receiving message: {e}", foreground="red")
         export_folder_entry.config(state="disabled")
 

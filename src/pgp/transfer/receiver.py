@@ -101,6 +101,7 @@ class Receiver:
             session_key: SessionKey = self.key_serializer.bytes_to_session_key(key_bytes=session_key_bytes,
                                                                                algorithm=message.symmetric_encryption_algorithm)
             # Decrypt message with optional signature
+            print(f"Decrypting message with {message.symmetric_encryption_algorithm}...")
             message_body_bytes = self.symmetric_encryptor.decrypt(
                 ciphertext=message.message_body_bytes,
                 session_key=session_key,

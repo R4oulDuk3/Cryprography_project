@@ -41,6 +41,21 @@ def _get_public_key_ring_element_attribute_by_algorithm_type(algorithm_type: Alg
         raise Exception("Invalid algorithm type: " + algorithm_type.value)
 
 
+def check_if_permitted_algorithm_combination(public_key_ring_element: dict):
+    if PublicKeyRingElementAttributes.ENCRYPTION_KEY.value in public_key_ring_element and \
+            PublicKeyRingElementAttributes.SIGNING_KEY.value in public_key_ring_element:
+        encryption_key = public_key_ring_element[PublicKeyRingElementAttributes.ENCRYPTION_KEY.value]
+        signing_key = public_key_ring_element[PublicKeyRingElementAttributes.SIGNING_KEY.value]
+
+        if (encryption_key[PublicKeyPublicRingAttributes.ALGORITHM.value] == 'RSA' or signing_key[
+            PublicKeyPublicRingAttributes.ALGORITHM.value] == 'RSA') and \
+                encryption_key[PublicKeyPublicRingAttributes.ALGORITHM.value] != signing_key[
+            PublicKeyPublicRingAttributes.ALGORITHM.value]:
+            raise Exception("Invalid algorithm combination: " + encryption_key[
+                PublicKeyPublicRingAttributes.ALGORITHM.value] + " and " + signing_key[
+                                PublicKeyPublicRingAttributes.ALGORITHM.value])
+
+
 class PublicKeyRing:
 
     def __init__(self, user_name: str):
@@ -53,7 +68,9 @@ class PublicKeyRing:
     """
 
     def add_public_key(self, public_key: PublicKey, user_email: str, algorithm_type: AlgorithmType):
-        validate_if_algorithm_matches_algorithm_type(algorithm=public_key.get_algorithm(), algorithm_type=algorithm_type)
+        # TODO: DONT ALLOW SESSIONS KEYS TO BE ADDED TO PUBLIC KEY RING
+        validate_if_algorithm_matches_algorithm_type(algorithm=public_key.get_algorithm(),
+                                                     algorithm_type=algorithm_type)
         public_key_ring_element = {
             PublicKeyRingElementAttributes.USER_NAME.value: self._user_name,
         }
@@ -61,14 +78,18 @@ class PublicKeyRing:
             public_key_ring_element = self._serialized_key_dictionary[user_email]
 
         if public_key_ring_element[PublicKeyRingElementAttributes.USER_NAME.value] != self._user_name:
-            raise Exception(f"A user already created keys for email: {user_email} with name: {self._user_name}")
+            raise Exception(f"A user already created keys for email: {user_email} with"
+                            f" name: {public_key_ring_element[PublicKeyRingElementAttributes.USER_NAME.value]}")
+
         attribute = _get_public_key_ring_element_attribute_by_algorithm_type(algorithm_type)
+
         if attribute.value in public_key_ring_element:
             raise Exception(f"Public key for {algorithm_type.value} already exists for user email: " + user_email)
 
         public_key_json = self._serializer.public_key_json_serialize(public_key=public_key, user_name=self._user_name,
                                                                      user_email=user_email)
         public_key_ring_element[attribute.value] = public_key_json
+        check_if_permitted_algorithm_combination(public_key_ring_element)
         self._serialized_key_dictionary[user_email] = public_key_ring_element
 
     def _remove_element_if_empty(self, email: str):
@@ -151,7 +172,8 @@ class PublicKeyRing:
                 public_key_json = public_key_ring_element[attribute]
                 public_keyring_element_dtos.append(
                     PublicKeyringRowDTO(user_email=user_email,
-                                        user_name=public_key_ring_element[PublicKeyRingElementAttributes.USER_NAME.value],
+                                        user_name=public_key_ring_element[
+                                            PublicKeyRingElementAttributes.USER_NAME.value],
                                         key_id=public_key_json[PublicKeyPublicRingAttributes.KEY_ID.value],
                                         public_key=public_key_json[PublicKeyPublicRingAttributes.PUBLIC_KEY.value],
                                         algorithm_type=attribute,
@@ -173,7 +195,6 @@ class PublicKeyRing:
                 if public_key_json[PublicKeyPublicRingAttributes.KEY_ID.value] == key_id:
                     return user_email
         raise Exception("No public key found for key id: " + key_id)
-
 
 
 def test_public_key_ring():

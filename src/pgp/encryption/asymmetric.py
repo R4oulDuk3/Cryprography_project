@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
-from src.pgp.consts.consts import Algorithm, UTF_8
-from enum import Enum
-from typing import Union
+
 import rsa
-import pickle
+
+import src.pgp.elgamal.elgamal as elgamal
+from src.pgp.consts.consts import Algorithm, UTF_8, UTF_16
 from src.pgp.key.generate.keypair import KeyPairGenerator
+from src.pgp.key.generate.session import SessionKeyGenerator
 from src.pgp.key.key import RSAPublicKey, RSAPrivateKey, PublicKey, PrivateKey, ElGamalPublicKey, ElGamalPrivateKey
+from src.pgp.key.key_serializer import KeySerializer
 from src.pgp.util.util import validate_if_algorithm_asymmetric_encryption
-from Crypto.Util.number import getPrime, GCD
-from Crypto.Random import get_random_bytes
-from Crypto.Util.number import inverse, getRandomRange
 
 
 class AsymmetricEncryptor:
@@ -40,25 +39,19 @@ class AbstractAsymmetricEncryptionStrategy(ABC):
 
 class ElGamalAsymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
     def encrypt(self, public_key: ElGamalPublicKey, plaintext: str | bytes) -> bytes:
-        if isinstance(plaintext, str):
-            plaintext = plaintext.encode(UTF_8)
-
-        M = int.from_bytes(plaintext, byteorder='big')
-        p, g, y = public_key.get_key()
-        K = getRandomRange(2, p - 1)
-        a = pow(g, K, p)
-        b = (M * pow(y, K, p)) % p
-        ciphertext = (a, b)
-        return pickle.dumps(ciphertext)
+        if isinstance(plaintext, bytes):
+            plaintext = plaintext.decode(UTF_16)
+        res = elgamal.encrypt(public_key.get_key(), plaintext)
+        print(f"Encrypted message: {res}")
+        return res.encode(UTF_16)
 
     def decrypt(self, private_key: ElGamalPrivateKey, ciphertext: str | bytes) -> bytes:
-        ciphertext = pickle.loads(ciphertext)
-        p, g, x = private_key.get_key()
-        a, b = ciphertext
-        s = pow(a, x, p)
-        inv_s = inverse(s, p)
-        plaintext = (b * inv_s) % p
-        return plaintext.to_bytes((plaintext.bit_length() + 7) // 8, byteorder='big')
+        if isinstance(ciphertext, bytes):
+            ciphertext = ciphertext.decode(UTF_16)
+        res = elgamal.decrypt(private_key.get_key(), ciphertext)
+        # For some reason our ElGmal implementation appends an uneeded 2 bytes when decrypting or something
+        # So here we just remove them
+        return res.encode(UTF_16)[2:]
 
 
 class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
@@ -80,24 +73,29 @@ class RSASymmetricEncryptionStrategy(AbstractAsymmetricEncryptionStrategy):
 if __name__ == "__main__":
     try:
         # RSA encryption/decryption
-        RSA_key_pair = KeyPairGenerator().generate_key_pair(Algorithm.RSA, KeyPairGenerator().get_available_key_sizes()[0])
+        RSA_key_pair = KeyPairGenerator().generate_key_pair(Algorithm.RSA,
+                                                            KeyPairGenerator().get_available_key_sizes()[0])
         message = 'My RSA message'
         enciphered_message = AsymmetricEncryptor().encrypt(RSA_key_pair.get_public_key(), message, Algorithm.RSA)
-        deciphered_message = AsymmetricEncryptor().decrypt(RSA_key_pair.get_private_key(), enciphered_message, Algorithm.RSA)
+        deciphered_message = AsymmetricEncryptor().decrypt(RSA_key_pair.get_private_key(), enciphered_message,
+                                                           Algorithm.RSA)
         print("============================================")
         print("\t" * 2 + "RSA encryption/decryption")
         print("--------------------------------------------")
         print(f"Original message: {message}")
         print(f"Enciphered message: {enciphered_message.hex()}")
-        print(f"Deciphered message: {deciphered_message}")
+        print(f"Deciphered message: {deciphered_message.decode(UTF_8)}")
         print("============================================")
-
+        assert message == deciphered_message.decode(UTF_8)
         # El Gamal
         El_Gamal_key_pair = KeyPairGenerator().generate_key_pair(
             Algorithm.ELGAMAL,
             KeyPairGenerator().get_available_key_sizes()[0]
         )
-        message = 'My ElGamal message'
+        key_serializer = KeySerializer()
+        message = key_serializer.session_key_to_bytes(
+            key=SessionKeyGenerator().generate_session_key(Algorithm.CAST_128)
+        )
         enciphered_message = AsymmetricEncryptor().encrypt(
             El_Gamal_key_pair.get_public_key(),
             message,
@@ -113,8 +111,9 @@ if __name__ == "__main__":
         print("--------------------------------------------")
         print(f"Original message: {message}")
         print(f"Enciphered message: {enciphered_message.hex()}")
-        print(f"Deciphered message: {deciphered_message.decode(UTF_8)}")
+        print(f"Deciphered message: {deciphered_message}")
         print("============================================")
+        assert message == deciphered_message
 
     except (TypeError, ValueError) as e:
         print(f"Test failed.{e}")

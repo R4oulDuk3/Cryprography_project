@@ -4,6 +4,7 @@ PRIVATE_KEY_RING_SALT = 'private_key_ring_salt'
 
 KEY_ID_LENGTH = 64
 UTF_8 = 'utf-8'
+UTF_16 = 'utf-16'
 SECRET_KEY_RING_FILE = 'secret_key_ring.json'
 DATA_DIR = 'data'
 PUBLIC_KEY_RING_FILE = 'public_key_ring.json'
