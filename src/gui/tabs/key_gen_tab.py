@@ -17,18 +17,34 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
         generate_result_label.config(text="Password input box is empty.", foreground="black")
         return
     try:
-        asym_algo = Algorithm.RSA if asym_algo == "RSA" else Algorithm.ELGAMAL if asym_algo == "ElGamal" else None
         key_type = AlgorithmType.ASYMMETRIC_ENCRYPTION if key_type == "Encryption" \
             else AlgorithmType.SIGNING if key_type == "Signature" else None
+
+        kg_algorithm = None
+        if asym_algo == "RSA":
+            kg_algorithm = Algorithm.RSA
+        elif asym_algo == "ElGamal":
+            if key_type == AlgorithmType.SIGNING:
+                kg_algorithm = Algorithm.DSA
+            elif key_type == AlgorithmType.ASYMMETRIC_ENCRYPTION:
+                kg_algorithm = Algorithm.ELGAMAL
+            else:
+                kg_algorithm = None
         user.key_manager.generate_key_pair(
-            algorithm=asym_algo,
+            algorithm=kg_algorithm,
             key_size=key_size,
             password=password,
             email=email,
             algorithm_type=key_type
         )
         generated_key_type = "Encryption" if key_type == AlgorithmType.ASYMMETRIC_ENCRYPTION else "Signature"
-        generated_key_algorithm = "RSA" if asym_algo == Algorithm.RSA else "ElGamal"
+        generated_key_algorithm = None
+        if kg_algorithm == Algorithm.RSA:
+            generated_key_algorithm = "RSA"
+        elif kg_algorithm == Algorithm.DSA:
+            generated_key_algorithm = "DSA"
+        elif kg_algorithm == Algorithm.ELGAMAL:
+            generated_key_algorithm = "ElGamal"
         timestamp = datetime.now().strftime("%H:%M:%S")
         generate_result_label.config(
             text=f"Successfully generated {generated_key_type} keys with {generated_key_algorithm} algorithm. TS({timestamp})!",
