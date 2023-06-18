@@ -363,37 +363,44 @@ def keyg_tab_gen(notebook, user, logout_callback):
         )
     )
 
-    # Delete keys
+    separator3 = ttk.Separator(scrollable_frame, orient="horizontal")
+    separator3.grid(row=27, column=0, columnspan=3, padx=0, pady=10, sticky="we")
+
+
+    # DELETE KEYS
     delete_keys_label = ttk.Label(scrollable_frame, text="Delete keys:", font=header_font)
-    delete_keys_label.grid(row=27, column=0, columnspan=2, padx=10, pady=10)
+    delete_keys_label.grid(row=28, column=0, columnspan=2, padx=10, pady=10)
 
     delete_email_selection_label = ttk.Label(scrollable_frame, text="Email:")
-    delete_email_selection_label.grid(row=28, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_email_selection_label.grid(row=29, column=0, padx=12, pady=4, sticky=tk.W)
     delete_email_selection_combo = ttk.Combobox(
         scrollable_frame,
         values=user.key_manager.get_all_private_keyring_mails(),
         state="readonly"
     )
-    delete_email_selection_combo.grid(row=28, column=1, padx=12, pady=4)
+    delete_email_selection_combo.grid(row=29, column=1, padx=12, pady=4)
     delete_email_selection_combo.config(width=21)
 
     delete_key_type_label = ttk.Label(scrollable_frame, text="Key Type:")
-    delete_key_type_label.grid(row=29, column=0, padx=12, pady=4, sticky=tk.W)
-    delete_key_type_combo = ttk.Combobox(scrollable_frame, values=[AlgorithmType.ASYMMETRIC_ENCRYPTION.value,
-                                                                   AlgorithmType.SIGNING.value], state="readonly")
-    delete_key_type_combo.grid(row=29, column=1, padx=12, pady=4)
+    delete_key_type_label.grid(row=30, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_key_type_combo = ttk.Combobox(
+        scrollable_frame,
+        values = [AlgorithmType.ASYMMETRIC_ENCRYPTION.value, AlgorithmType.SIGNING.value],
+        state="readonly"
+    )
+    delete_key_type_combo.grid(row=30, column=1, padx=12, pady=4)
     delete_key_type_combo.current(0)
 
     delete_password_label = ttk.Label(scrollable_frame, text="Password:")
-    delete_password_label.grid(row=30, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_password_label.grid(row=31, column=0, padx=12, pady=4, sticky=tk.W)
     delete_password_entry = ttk.Entry(scrollable_frame, show="*")
-    delete_password_entry.grid(row=30, column=1, padx=12, pady=4)
+    delete_password_entry.grid(row=31, column=1, padx=12, pady=4)
     delete_password_entry.config(width=23)
 
     delete_keys_result_label = ttk.Label(scrollable_frame, text="", wraplength=320)
-    delete_keys_result_label.grid(row=31, column=0, columnspan=2)
+    delete_keys_result_label.grid(row=32, column=0, columnspan=2)
     delete_keys_button = ttk.Button(scrollable_frame, text="Delete")
-    delete_keys_button.grid(row=32, column=0, columnspan=2, padx=10, pady=10)
+    delete_keys_button.grid(row=33, column=0, columnspan=2, padx=10, pady=10)
     delete_keys_button.bind(
         "<Button-1>", lambda event: delete_keys_callback(
             user,
@@ -406,13 +413,12 @@ def keyg_tab_gen(notebook, user, logout_callback):
         )
     )
 
-    # Logout separator
     logout_separator = ttk.Separator(scrollable_frame, orient="horizontal")
-    logout_separator.grid(row=33, column=0, columnspan=3, padx=0, pady=10, sticky="we")
+    logout_separator.grid(row=34, column=0, columnspan=3, padx=0, pady=10, sticky="we")
     username_label = ttk.Label(scrollable_frame, text=f"Current user: {user.user_name}")
-    username_label.grid(row=34, column=0, padx=12, pady=4, sticky=tk.W)
+    username_label.grid(row=35, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(scrollable_frame, text="Logout", command=logout_callback)
-    logout_btn.grid(row=35, column=0, padx=12, pady=4, sticky=tk.W)
+    logout_btn.grid(row=36, column=0, padx=12, pady=4, sticky=tk.W)
 
     scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
