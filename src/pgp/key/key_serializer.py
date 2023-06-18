@@ -7,7 +7,6 @@ from src.pgp.key.key import KeyPair, RSAPublicKey, PrivateKey, RSAPrivateKey, Pu
 from Crypto.PublicKey import DSA
 import src.pgp.elgamal.elgamal as elgamal
 
-# TODO: ADD ELGAMAL to conclude_asymmetric_algorithm_from_pem
 
 def conclude_asymmetric_algorithm_from_pem(key_pem: str) -> Algorithm:
     if "RSA" in key_pem:
