@@ -84,6 +84,11 @@ def set_key_id_label(email_combobox: ttk.Combobox,
     )
 
 
+def refresh_emails(from_email_combobox, to_email_combobox, user):
+    from_email_combobox['values'] = user.key_manager.get_all_private_keyring_mails()
+    to_email_combobox['values'] = user.key_manager.get_all_public_keyring_mails()
+
+
 def send_msg_tab_gen(notebook, user: User, logout_callback):
     send_msg_tab = ttk.Frame(notebook)
     notebook.add(send_msg_tab, text="Send Message")
@@ -188,7 +193,7 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
     result_label.grid(row=10, column=1, padx=12, pady=4, sticky=tk.W)
 
     send_msg_btn = ttk.Button(send_msg_tab, text="Send Message")
-    send_msg_btn.grid(row=11, column=0, columnspan=2, padx=10, pady=10)
+    send_msg_btn.grid(row=11, column=0, padx=10, pady=10, sticky=tk.W)
     send_msg_btn.bind("<Button-1>", lambda event: send_message_callback(
         message_text=message_text,
         from_email_combobox=from_email_combobox,
@@ -203,6 +208,10 @@ def send_msg_tab_gen(notebook, user: User, logout_callback):
         convert_var=convert_var,
         compress_var=compress_var,
     ))
+
+    refresh_btn = ttk.Button(send_msg_tab, text="Refresh")
+    refresh_btn.grid(row=11, column=1, padx=10, pady=10, sticky=tk.W)
+    refresh_btn.bind("<Button-1>", lambda event: refresh_emails(from_email_combobox, to_email_combobox, user))
 
     logout_separator = ttk.Separator(send_msg_tab, orient="horizontal")
     logout_separator.grid(row=12, column=0, columnspan=12, padx=0, pady=10, sticky="we")
