@@ -5,6 +5,7 @@ from Crypto.PublicKey import DSA
 
 from src.pgp.consts.consts import KeyType, Algorithm, KEY_ID_LENGTH
 import src.pgp.elgamal.elgamal as elgamal
+from src.pgp.hash.hash import SHA1Hasher, Hasher
 
 
 class Key(ABC):
@@ -143,4 +144,6 @@ class ElGamalPrivateKey(PrivateKey):
 
 
 def made_key_id(key_bytes: bytes) -> str:
-    return key_bytes[-KEY_ID_LENGTH:].hex()
+    hasher: Hasher = SHA1Hasher()
+    fingerprint = hasher.hash(message=key_bytes)
+    return fingerprint[-KEY_ID_LENGTH:].hex()
