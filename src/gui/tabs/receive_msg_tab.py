@@ -45,8 +45,8 @@ def receive_message_callback(user: User, message_content_label: ttk.Label, path_
                             session_key_generator=session_key_generator,
                             key_serializer=key_serializer)
         message = receiver.unpack_message(path_to_message)
-        plaintext = receiver.decrypt_message(message, password)
-        message_content_label.config(text="Message:\t" + plaintext, foreground="black")
+        sender, plaintext = receiver.decrypt_message(message, password)
+        message_content_label.config(text=f"Sender: { sender } Message: { plaintext }", foreground="black")
         export_folder_entry.config(state="normal")
     except Exception as e:
         print(f"Error while receiving message: {e}")
@@ -86,7 +86,7 @@ def select_directory(user: User, msg_path_label: ttk.Label, password_entry: tk.E
         if message.is_encrypted:
             email = user.key_manager.get_user_mail_by_key_id(key_id=message.asymmetric_encryption_key_id)
 
-            msg_path_label.config(text=f"file path: {file_path},encrypted, email: {email},"
+            msg_path_label.config(text=f"file path: {file_path},encrypted, receiver_email: {email},"
                                        f" key_id {message.asymmetric_encryption_key_id}", foreground="black")
             password_entry.config(state="normal")
         else:

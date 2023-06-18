@@ -70,12 +70,12 @@ class Receiver:
         message_body: MessageBody = MessageBody.from_bytes(
             data=message_body_bytes)
         # Verify signature
-        self._verify(message_body=message_body)
+        sender = self._verify(message_body=message_body)
 
         plaintext = message_body.plaintext
-        return plaintext
+        return sender, plaintext
 
-    def _verify(self, message_body: MessageBody):
+    def _verify(self, message_body: MessageBody) -> str:
         if message_body.is_signed:
             sender_public_key = self.key_manager.get_public_key_by_key_id(key_id=message_body.signing_key_id, )
             is_verified = self.message_signer.verify(message=message_body.plaintext,
@@ -83,7 +83,12 @@ class Receiver:
                                                      public_key=sender_public_key,
                                                      algorithm=sender_public_key.get_algorithm())
             if not is_verified:
-                raise Exception("Signature is not verified")
+                raise Exception("Signature could not be verified")
+            sender_email = self.key_manager.get_user_mail_by_key_id(key_id=message_body.signing_key_id)
+            return sender_email
+        else:
+            return "Unknown sender"
+
 
     def _decompress(self, message: PGPMessage, message_body_bytes: bytes):
         if message.is_compressed:
@@ -130,6 +135,7 @@ def test_message_receive():
                         key_serializer=key_serializer)
     message = receiver.unpack_message(path_to_message="message.pgp")
     print(message)
-    plaintext = receiver.decrypt_message(message=message,
+    sender, plaintext = receiver.decrypt_message(message=message,
                                          password="password")
     print(plaintext)
+    print(sender)
