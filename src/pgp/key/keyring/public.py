@@ -68,7 +68,6 @@ class PublicKeyRing:
     """
 
     def add_public_key(self, public_key: PublicKey, user_email: str, algorithm_type: AlgorithmType):
-        # TODO: DONT ALLOW SESSIONS KEYS TO BE ADDED TO PUBLIC KEY RING
         validate_if_algorithm_matches_algorithm_type(algorithm=public_key.get_algorithm(),
                                                      algorithm_type=algorithm_type)
         public_key_ring_element = {

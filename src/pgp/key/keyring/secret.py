@@ -75,7 +75,8 @@ class SecretKeyRing:
         self._remove_element_if_empty(user_email)
 
     def get_key_pair_by_user_email(self, user_mail: str, password: str, algorithm_type: AlgorithmType) -> KeyPair:
-
+        if user_mail not in self._serialized_key_pair_dictionary:
+            raise Exception("Key pair for user email: " + user_mail + " does not exist")
         secret_key_ring_element = self._serialized_key_pair_dictionary[user_mail]
         attribute: PrivateRingElementAttributes = _get_public_key_ring_element_attribute_by_algorithm_type(
             algorithm_type=algorithm_type)

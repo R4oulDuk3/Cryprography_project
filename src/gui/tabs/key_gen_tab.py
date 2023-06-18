@@ -6,10 +6,12 @@ from src.pgp.consts.consts import KEY_SIZES, ASYMMETRIC_ENCRYPTION_ALGORITHMS, A
 from src.pgp.key.key_serializer import KeySerializer, conclude_asymmetric_algorithm_from_pem
 from src.pgp.key.manager import KeyManager
 from src.pgp.user.user import User
+import traceback
 
 
 def generate_keypair_callback(user: User, generate_result_label: ttk.Label, email: str, key_type: str, asym_algo: str,
-                              key_size: int, password: str, export_email_selection_combo: ttk.Combobox):
+                              key_size: int, password: str, export_email_selection_combo: ttk.Combobox,
+                              delete_email_selection_combo: ttk.Combobox):
     if email == "":
         generate_result_label.config(text="Email input box is empty.", foreground="black")
         return
@@ -50,19 +52,21 @@ def generate_keypair_callback(user: User, generate_result_label: ttk.Label, emai
             text=f"Successfully generated {generated_key_type} keys with {generated_key_algorithm} algorithm. TS({timestamp})!",
             foreground="green"
         )
-        update_email_list(user, export_email_selection_combo)
+        update_email_list(user, export_email_selection_combo, delete_email_selection_combo)
     except Exception as e:
         print(f"Error while generating keys: {e}")
         generate_result_label.config(text=f"Error while generating keys: {e}", foreground="red")
 
 
-def update_email_list(user, export_email_selection_combo: ttk.Combobox):
+def update_email_list(user, export_email_selection_combo: ttk.Combobox, delete_email_selection_combo: ttk.Combobox):
     emails = user.key_manager.get_all_private_keyring_mails()
     export_email_selection_combo['values'] = emails
+    delete_email_selection_combo['values'] = emails
 
 
 def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_private: str, path_public: str,
-                         email: str, password: str, key_type: str, export_email_selection_combo: ttk.Combobox):
+                         email: str, password: str, key_type: str, export_email_selection_combo: ttk.Combobox,
+                         delete_email_selection_combo: ttk.Combobox):
     if path_private == "" or path_public == "":
         import_keys_result_label.config(text="No location selected!", foreground="black")
         return
@@ -77,7 +81,7 @@ def import_keys_callback(user: User, import_keys_result_label: ttk.Label, path_p
             password=password,
             algorithm_type=key_type
         )
-        update_email_list(user, export_email_selection_combo)
+        update_email_list(user, export_email_selection_combo, delete_email_selection_combo)
         generated_key_type = "Encryption" if key_type == AlgorithmType.ASYMMETRIC_ENCRYPTION else "Signature"
         import_keys_result_label.config(
             text=f"Successfully imported {generated_key_type} keys for email: {email}!",
@@ -107,10 +111,30 @@ def export_keys_callback(user: User, export_keys_result_label: ttk.Label, path: 
             key_pair=key_pair,
             public_key_pem_path=path + "/public_key_" + user.user_name + "_" + key_type + "_" + email + ".pem"
         )
-        export_keys_result_label.config(text=f"Successfully exported public and private keys for {user.user_name} ({email})!", foreground="green")
+        export_keys_result_label.config(
+            text=f"Successfully exported public and private keys for {user.user_name} ({email})!", foreground="green")
     except Exception as e:
         print(f"Error while exporting keys: {e}")
         export_keys_result_label.config(text=f"Error while exporting keys: {e}", foreground="red")
+
+
+def delete_keys_callback(user: User, delete_keys_result_label: ttk.Label, delete_email_selection_combo: ttk.Combobox,
+                         export_email_selection_combo: ttk.Combobox,
+                         password: str, email: str, key_type: str):
+    try:
+        user.key_manager.delete_key_pair_by_user_email(email=email,
+                                                       password=password,
+                                                       algorithm_type=AlgorithmType(key_type))
+        update_email_list(user, export_email_selection_combo, delete_email_selection_combo)
+        print(f"Successfully deleted key [{key_type}] for {user.user_name} ({email})!")
+        delete_keys_result_label.config(text=
+                                        f"Successfully deleted key [{key_type}] for {user.user_name} ({email})!",
+                                        foreground="green")
+
+    except Exception as e:
+        print(f"Error while deleting keys: {e}")
+        delete_keys_result_label.config(text=f"Error while deleting keys: {e}", foreground="red")
+        traceback.print_exc()
 
 
 def keyg_tab_gen(notebook, user, logout_callback):
@@ -216,6 +240,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
             key_size=int(key_size_combo.get()),
             password=password_entry.get(),
             export_email_selection_combo=export_email_selection_combo,
+            delete_email_selection_combo=delete_email_selection_combo
         )
     )
 
@@ -279,6 +304,7 @@ def keyg_tab_gen(notebook, user, logout_callback):
             password=import_keys_password_entry.get(),
             key_type=import_key_type_combo.get(),
             export_email_selection_combo=export_email_selection_combo,
+            delete_email_selection_combo=delete_email_selection_combo,
         )
     )
 
@@ -332,16 +358,61 @@ def keyg_tab_gen(notebook, user, logout_callback):
             path=export_key_entry.get(),
             password=export_password_entry.get(),
             email=export_email_selection_combo.get(),
-            key_type=export_key_type_combo.get()
+            key_type=export_key_type_combo.get(),
+
         )
     )
 
+    # Delete keys
+    delete_keys_label = ttk.Label(scrollable_frame, text="Delete keys:", font=header_font)
+    delete_keys_label.grid(row=27, column=0, columnspan=2, padx=10, pady=10)
+
+    delete_email_selection_label = ttk.Label(scrollable_frame, text="Email:")
+    delete_email_selection_label.grid(row=28, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_email_selection_combo = ttk.Combobox(
+        scrollable_frame,
+        values=user.key_manager.get_all_private_keyring_mails(),
+        state="readonly"
+    )
+    delete_email_selection_combo.grid(row=28, column=1, padx=12, pady=4)
+    delete_email_selection_combo.config(width=21)
+
+    delete_key_type_label = ttk.Label(scrollable_frame, text="Key Type:")
+    delete_key_type_label.grid(row=29, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_key_type_combo = ttk.Combobox(scrollable_frame, values=[AlgorithmType.ASYMMETRIC_ENCRYPTION.value,
+                                                                   AlgorithmType.SIGNING.value], state="readonly")
+    delete_key_type_combo.grid(row=29, column=1, padx=12, pady=4)
+    delete_key_type_combo.current(0)
+
+    delete_password_label = ttk.Label(scrollable_frame, text="Password:")
+    delete_password_label.grid(row=30, column=0, padx=12, pady=4, sticky=tk.W)
+    delete_password_entry = ttk.Entry(scrollable_frame, show="*")
+    delete_password_entry.grid(row=30, column=1, padx=12, pady=4)
+    delete_password_entry.config(width=23)
+
+    delete_keys_result_label = ttk.Label(scrollable_frame, text="", wraplength=320)
+    delete_keys_result_label.grid(row=31, column=0, columnspan=2)
+    delete_keys_button = ttk.Button(scrollable_frame, text="Delete")
+    delete_keys_button.grid(row=32, column=0, columnspan=2, padx=10, pady=10)
+    delete_keys_button.bind(
+        "<Button-1>", lambda event: delete_keys_callback(
+            user,
+            delete_keys_result_label,
+            password=delete_password_entry.get(),
+            email=delete_email_selection_combo.get(),
+            key_type=delete_key_type_combo.get(),
+            delete_email_selection_combo=delete_email_selection_combo,
+            export_email_selection_combo=export_email_selection_combo,
+        )
+    )
+
+    # Logout separator
     logout_separator = ttk.Separator(scrollable_frame, orient="horizontal")
-    logout_separator.grid(row=27, column=0, columnspan=3, padx=0, pady=10, sticky="we")
+    logout_separator.grid(row=33, column=0, columnspan=3, padx=0, pady=10, sticky="we")
     username_label = ttk.Label(scrollable_frame, text=f"Current user: {user.user_name}")
-    username_label.grid(row=28, column=0, padx=12, pady=4, sticky=tk.W)
+    username_label.grid(row=34, column=0, padx=12, pady=4, sticky=tk.W)
     logout_btn = ttk.Button(scrollable_frame, text="Logout", command=logout_callback)
-    logout_btn.grid(row=29, column=0, padx=12, pady=4, sticky=tk.W)
+    logout_btn.grid(row=35, column=0, padx=12, pady=4, sticky=tk.W)
 
     scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")

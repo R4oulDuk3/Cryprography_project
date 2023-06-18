@@ -109,6 +109,7 @@ class KeyManager:
         self._public_key_ring.delete_public_key_by_user_email(user_email=email,
                                                               algorithm_type=algorithm_type)
         self._private_key_ring.save()
+        self._public_key_ring.save()
 
     def get_signing_key_id_by_user_email(self, email: str) -> str:
         return self._public_key_ring.get_signing_key_id_for_email(user_email=email)
